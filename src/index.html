@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Token Monitor</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:transparent;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;color:#e0e0e0;overflow-x:hidden;overflow-y:auto;user-select:none}
+body::-webkit-scrollbar{width:3px}
+body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+
+.container{
+  background:rgba(20,20,26,0.86);
+  backdrop-filter:blur(40px) saturate(180%);
+  -webkit-backdrop-filter:blur(40px) saturate(180%);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:14px;padding:12px 14px;
+  display:flex;flex-direction:column;gap:6px;
+  min-height:100vh;
+}
+
+.titlebar{-webkit-app-region:drag;display:flex;align-items:center;justify-content:space-between;padding-bottom:2px}
+.tl{display:flex;align-items:center;gap:6px}
+.close-btn{-webkit-app-region:no-drag;width:11px;height:11px;border-radius:50%;background:#ff5f57;border:none;cursor:pointer;transition:opacity .15s}
+.close-btn:hover{opacity:.7}
+.title{font-size:12px;font-weight:600;color:#fff;letter-spacing:.2px}
+.live-dot{width:5px;height:5px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.tabs{display:flex;gap:3px;-webkit-app-region:no-drag}
+.tab{font-size:9px;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06);color:#666;cursor:pointer;font-family:inherit;font-weight:500;transition:all .15s}
+.tab:hover{color:#aaa;background:rgba(255,255,255,0.08)}
+.tab.active{color:#4ade80;background:rgba(74,222,128,0.08);border-color:rgba(74,222,128,0.15)}
+
+.model-row{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.04);border-radius:7px}
+.mr-left{display:flex;flex-direction:column}
+.mr-name{font-size:9px;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.mr-name .est{font-size:7px;color:#f59e0b;margin-left:2px}
+.mr-right{display:flex;gap:6px;align-items:center}
+.mr-stat{text-align:right}
+.mr-stat .l{font-size:7px;color:#555;text-transform:uppercase;letter-spacing:.3px;line-height:1}
+.mr-stat .v{font-size:11px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums;line-height:1.3}
+.mr-stat .v.cost{color:#a78bfa;font-size:10px}
+
+.totals{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:7px}
+.totals .tl2{font-size:9px;color:#888;font-weight:600}
+.totals .tv{font-size:13px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums}
+.totals .tv.cost{color:#a78bfa}
+
+.divider{height:1px;background:rgba(255,255,255,0.05);margin:2px 0}
+
+.prov-card{padding:6px 8px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.04);border-radius:7px;display:flex;flex-direction:column;gap:3px}
+.prov-header{display:flex;justify-content:space-between;align-items:center}
+.prov-name{font-size:10px;font-weight:600;color:#ccc}
+.prov-badge{font-size:7px;padding:1px 5px;border-radius:4px;font-weight:500}
+.prov-badge.pro{color:#4ade80;background:rgba(74,222,128,0.1)}
+.prov-badge.plus{color:#60a5fa;background:rgba(96,165,250,0.1)}
+.prov-badge.payg{color:#facc15;background:rgba(250,204,21,0.1)}
+.prov-badge.credits{color:#f472b6;background:rgba(244,114,182,0.1)}
+.prov-badge.err{color:#f87171;background:rgba(248,113,113,0.1)}
+.prov-badge.custom{color:#94a3b8;background:rgba(148,163,184,0.1)}
+.prov-row{display:flex;justify-content:space-between;align-items:center;font-size:9px}
+.prov-row .pl{color:#666}
+.prov-row .pv{color:#bbb;font-weight:600;font-variant-numeric:tabular-nums}
+.prov-row .pv.warn{color:#f87171}
+.prov-row .pv.ok{color:#4ade80}
+
+.quota-bar-bg{width:100%;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin:2px 0}
+.quota-bar{height:100%;border-radius:3px;transition:width .5s ease}
+.quota-bar.green{background:linear-gradient(90deg,#22c55e,#4ade80)}
+.quota-bar.yellow{background:linear-gradient(90deg,#eab308,#facc15)}
+.quota-bar.red{background:linear-gradient(90deg,#dc2626,#f87171)}
+.quota-bar.blue{background:linear-gradient(90deg,#3b82f6,#60a5fa)}
+.quota-bar.purple{background:linear-gradient(90deg,#7c3aed,#a78bfa)}
+
+.section-toggle{display:flex;align-items:center;gap:4px;cursor:pointer;padding:2px 0;-webkit-app-region:no-drag}
+.section-toggle:hover .stxt{color:#aaa}
+.section-toggle .arrow{font-size:7px;transition:transform .2s;display:inline-block;color:#555}
+.section-toggle .arrow.open{transform:rotate(90deg)}
+.section-toggle .stxt{font-size:9px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:.6px;transition:color .15s}
+
+.collapsible{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.collapsible.open{max-height:3000px}
+
+.chart-header{display:flex;justify-content:space-between;align-items:center}
+.chart-tabs{display:flex;gap:3px}
+.chart-wrap{position:relative;width:100%;height:120px}
+.chart-wrap canvas{width:100%;height:100%}
+.chart-tooltip{position:absolute;pointer-events:none;background:rgba(0,0,0,0.88);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:5px 8px;font-size:9px;color:#ddd;white-space:nowrap;display:none;z-index:10;backdrop-filter:blur(8px)}
+.chart-tooltip .tt-date{font-weight:600;color:#fff;margin-bottom:2px}
+.chart-tooltip .tt-row{display:flex;justify-content:space-between;gap:12px}
+.chart-tooltip .tt-label{color:#888}
+.chart-tooltip .tt-val{font-weight:600;font-variant-numeric:tabular-nums}
+.chart-tooltip .tt-val.tok{color:#818cf8}
+.chart-tooltip .tt-val.cost{color:#a78bfa}
+.chart-legend{display:flex;gap:8px;justify-content:center;font-size:8px;color:#666;margin-top:2px}
+.chart-legend .dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:2px;vertical-align:middle}
+
+.daily-row{display:grid;grid-template-columns:56px 1fr 50px;align-items:center;gap:4px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.02);font-size:9px}
+.daily-row:last-child{border-bottom:none}
+.dr-date{color:#666;font-variant-numeric:tabular-nums}
+.dr-bar-bg{height:4px;background:rgba(255,255,255,0.04);border-radius:2px;overflow:hidden}
+.dr-bar{height:100%;border-radius:2px;background:linear-gradient(90deg,#6366f1,#818cf8);transition:width .4s}
+.dr-tokens{color:#999;text-align:right;font-variant-numeric:tabular-nums}
+
+/* Settings */
+.settings-panel{display:flex;flex-direction:column;gap:6px;padding-top:4px}
+.settings-panel h3{font-size:10px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.add-row{display:flex;gap:4px;align-items:center}
+.add-row select,.add-row button{font-size:9px;padding:3px 6px;border-radius:5px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#ccc;font-family:inherit;cursor:pointer}
+.add-row select:focus,.add-row button:focus{outline:none;border-color:rgba(74,222,128,0.3)}
+.add-row button{background:rgba(74,222,128,0.1);color:#4ade80;font-weight:600}
+.add-row button:hover{background:rgba(74,222,128,0.2)}
+.cfg-card{padding:6px 8px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.04);border-radius:7px;display:flex;flex-direction:column;gap:3px}
+.cfg-card .cfg-header{display:flex;justify-content:space-between;align-items:center}
+.cfg-card .cfg-name{font-size:10px;font-weight:600;color:#ccc}
+.cfg-card .cfg-del{font-size:8px;color:#f87171;cursor:pointer;padding:1px 4px;border-radius:3px;background:rgba(248,113,113,0.1);border:none;font-family:inherit}
+.cfg-card .cfg-del:hover{background:rgba(248,113,113,0.2)}
+.cfg-field{display:flex;flex-direction:column;gap:1px}
+.cfg-field label{font-size:8px;color:#666;text-transform:uppercase;letter-spacing:.3px}
+.cfg-field input{font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#ddd;font-family:inherit;width:100%}
+.cfg-field input:focus{outline:none;border-color:rgba(74,222,128,0.3)}
+.cfg-field input::placeholder{color:#444}
+.save-btn{font-size:9px;padding:4px 10px;border-radius:5px;border:1px solid rgba(74,222,128,0.2);background:rgba(74,222,128,0.1);color:#4ade80;font-weight:600;cursor:pointer;font-family:inherit;align-self:flex-end}
+.save-btn:hover{background:rgba(74,222,128,0.2)}
+
+.empty-msg{font-size:10px;color:#555;text-align:center;padding:12px 8px}
+
+.footer{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:2px}
+.footer .fi{font-size:8px;color:#444}
+.footer .fb{-webkit-app-region:no-drag;font-size:8px;color:#555;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.05);border-radius:4px;padding:2px 6px;cursor:pointer;font-family:inherit;transition:all .15s}
+.footer .fb:hover{color:#aaa;background:rgba(255,255,255,0.08)}
+
+.spinner{display:inline-block;width:8px;height:8px;border:1.5px solid rgba(255,255,255,0.1);border-top-color:#4ade80;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="titlebar">
+    <div class="tl">
+      <button class="close-btn" onclick="window.close()"></button>
+      <span class="title">Token Monitor</span>
+      <span class="live-dot"></span>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-view="live">Live</button>
+      <button class="tab" data-view="providers">APIs</button>
+      <button class="tab" data-view="settings">⚙</button>
+    </div>
+  </div>
+
+  <!-- LIVE -->
+  <div id="viewLive">
+    <div id="modelsSection" style="display:flex;flex-direction:column;gap:4px"></div>
+    <div class="totals" id="totalsBar">
+      <span class="tl2">Total</span>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span class="tv" id="liveTotal">--</span>
+        <span class="tv cost" id="liveCost">--</span>
+      </div>
+    </div>
+    <div class="section-toggle" id="histToggle"><span class="arrow" id="histArrow">▶</span><span class="stxt">History</span></div>
+    <div class="collapsible" id="histPanel">
+      <div style="display:flex;flex-direction:column;gap:6px;padding-top:4px">
+        <div class="chart-header">
+          <div class="chart-tabs"><button class="tab active" data-days="7">7D</button><button class="tab" data-days="30">30D</button><button class="tab" data-days="90">90D</button></div>
+          <span style="font-size:8px;color:#555" id="histSummary"></span>
+        </div>
+        <div class="chart-wrap" id="chartWrap">
+          <canvas id="chartCanvas"></canvas>
+          <div class="chart-tooltip" id="chartTooltip">
+            <div class="tt-date" id="ttDate"></div>
+            <div class="tt-row"><span class="tt-label">Tokens</span><span class="tt-val tok" id="ttTokens"></span></div>
+            <div class="tt-row"><span class="tt-label">Cost</span><span class="tt-val cost" id="ttCost"></span></div>
+            <div class="tt-row"><span class="tt-label">Requests</span><span class="tt-val" id="ttReqs"></span></div>
+          </div>
+        </div>
+        <div class="chart-legend"><span><span class="dot" style="background:#818cf8"></span>Tokens</span><span><span class="dot" style="background:#a78bfa"></span>Cost</span></div>
+        <div class="section-toggle" id="dailyToggle"><span class="arrow" id="dailyArrow">▶</span><span class="stxt">Daily</span></div>
+        <div class="collapsible" id="dailyPanel"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROVIDERS -->
+  <div id="viewProviders" style="display:none;flex-direction:column;gap:4px">
+    <div id="providerCards" style="display:flex;flex-direction:column;gap:4px"></div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="viewSettings" style="display:none" class="settings-panel">
+    <h3>API Providers</h3>
+    <div class="add-row">
+      <select id="addProviderType"></select>
+      <button id="addProviderBtn">+ Add</button>
+    </div>
+    <div id="providerConfigs" style="display:flex;flex-direction:column;gap:4px"></div>
+    <button class="save-btn" id="saveConfigBtn">Save</button>
+    <div class="divider"></div>
+    <h3>OpenClaw Path</h3>
+    <div class="cfg-field"><input id="openclawPathInput" placeholder="Auto-detected (leave empty)"></div>
+  </div>
+
+  <div class="footer">
+    <span class="fi" id="footerInfo">--</span>
+    <div style="display:flex;gap:4px">
+      <button class="fb" id="pathBtn" title="Open data folder">📂</button>
+      <button class="fb" onclick="refreshAll()">↻</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const { ipcRenderer, shell } = require('electron');
+
+function fmt(n){if(n==null||isNaN(n))return'--';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return String(Math.round(n))}
+function fmtCost(n){if(n==null||isNaN(n))return'--';if(n>=1)return'$'+n.toFixed(2);if(n>=0.01)return'$'+n.toFixed(3);return'$'+n.toFixed(4)}
+function shortModel(m){return(m||'').replace(/^(azure\/)?anthropic\//,'').replace(/-\d{8}$/,'').replace(/^nvidia\//,'')}
+
+// ── Views ──
+let currentView='live';
+document.querySelectorAll('.tabs .tab[data-view]').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tabs .tab[data-view]').forEach(b=>b.classList.remove('active'));
+    t.classList.add('active');
+    currentView=t.dataset.view;
+    document.getElementById('viewLive').style.display=currentView==='live'?'block':'none';
+    document.getElementById('viewProviders').style.display=currentView==='providers'?'flex':'none';
+    document.getElementById('viewSettings').style.display=currentView==='settings'?'flex':'none';
+    if(currentView==='providers')refreshProviders();
+    if(currentView==='settings')loadSettings();
+  });
+});
+
+// ── Live ──
+function updateLive(sessions){
+  const sec=document.getElementById('modelsSection');
+  if(!sessions||!sessions.length){sec.innerHTML='<div class="empty-msg">No OpenClaw sessions detected.<br>Start a session to see live token usage.</div>';return}
+  let totalTokens=0,totalCost=0;
+  sec.innerHTML=sessions.map(s=>{
+    totalTokens+=s.total||0;totalCost+=s.cost||0;
+    const est=s.estimated?'<span class="est">~est</span>':'';
+    return`<div class="model-row"><div class="mr-left"><span class="mr-name" title="${s.model}">${shortModel(s.model)}${est}</span></div><div class="mr-right"><div class="mr-stat"><div class="l">In</div><div class="v">${fmt(s.input)}</div></div><div class="mr-stat"><div class="l">Out</div><div class="v">${fmt(s.output)}</div></div><div class="mr-stat"><div class="l">Cost</div><div class="v cost">${fmtCost(s.cost)}</div></div></div></div>`;
+  }).join('');
+  document.getElementById('liveTotal').textContent=fmt(totalTokens);
+  document.getElementById('liveCost').textContent=fmtCost(totalCost);
+}
+
+// ── Providers ──
+function renderProviderCard(p){
+  if(p.error)return`<div class="prov-card"><div class="prov-header"><span class="prov-name">${p.name||p.provider}</span><span class="prov-badge err">error</span></div><div class="prov-row"><span class="pl">${p.error}</span></div></div>`;
+  let badge='',rows='';
+  const t=p.type||'';
+
+  // DeepSeek
+  if(p.totalBalance!=null&&p.currency){
+    badge=`<span class="prov-badge payg">pay-as-you-go</span>`;
+    const bal=p.totalBalance;const ref=Math.max(p.toppedUpBalance||10,bal);
+    const pct=ref>0?(bal/ref*100):0;const cls=pct>50?'green':pct>20?'yellow':'red';
+    rows=`<div class="prov-row"><span class="pl">Status</span><span class="pv ${p.available?'ok':'warn'}">${p.available?'Active':'Inactive'}</span></div>
+      <div class="prov-row"><span class="pl">Balance</span><span class="pv">${p.currency} ${bal.toFixed(2)}</span></div>
+      <div class="quota-bar-bg"><div class="quota-bar ${cls}" style="width:${pct}%"></div></div>`;
+  }
+  // Z.ai
+  else if(p.windows){
+    badge=`<span class="prov-badge pro">${p.plan||'pro'}</span>`;
+    for(const w of p.windows){
+      const pct=w.pct||0;const cls=pct<60?'green':pct<85?'yellow':'red';
+      rows+=`<div class="prov-row"><span class="pl">${w.label}</span><span class="pv">${pct.toFixed(0)}%</span></div><div class="quota-bar-bg"><div class="quota-bar ${cls}" style="width:${pct}%"></div></div>`;
+      if(w.remaining!=null)rows+=`<div class="prov-row"><span class="pl">Remaining</span><span class="pv ok">${w.remaining}/${w.total}</span></div>`;
+    }
+  }
+  // Laozhang
+  else if(p.totalUsage!=null){
+    badge=`<span class="prov-badge payg">pay-as-you-go</span>`;
+    const pct=Math.min(100,(p.totalUsage/10)*100);
+    rows=`<div class="prov-row"><span class="pl">Usage</span><span class="pv">${fmtCost(p.totalUsage)}</span></div><div class="quota-bar-bg"><div class="quota-bar purple" style="width:${pct}%"></div></div>`;
+  }
+  // Qwen
+  else if(p.keyStatus){
+    badge=`<span class="prov-badge payg">pay-as-you-go</span>`;
+    const ks=p.keyStatus==='active';
+    rows=`<div class="prov-row"><span class="pl">Key</span><span class="pv ${ks?'ok':'warn'}">${ks?'Active':'Invalid'}</span></div>`;
+    if(p.cashBalance!=null){
+      const pct=Math.min(100,(p.cashBalance/50)*100);const cls=pct>50?'green':pct>20?'yellow':'red';
+      rows+=`<div class="prov-row"><span class="pl">Balance</span><span class="pv">¥${p.cashBalance.toFixed(2)}</span></div><div class="quota-bar-bg"><div class="quota-bar ${cls}" style="width:${pct}%"></div></div>`;
+    }
+    if(p.monthlySpend!=null)rows+=`<div class="prov-row"><span class="pl">Monthly</span><span class="pv">¥${p.monthlySpend.toFixed(2)}</span></div>`;
+  }
+  // MiniMax
+  else if(p.quota){
+    badge=`<span class="prov-badge plus">${p.plan||'Plan'}</span>`;
+    rows=`<div class="prov-row"><span class="pl">Quota</span><span class="pv">${p.quota}</span></div>`;
+  }
+  // Generic
+  else{
+    badge=`<span class="prov-badge custom">${t}</span>`;
+    if(p.note)rows=`<div class="prov-row"><span class="pl">${p.note}</span></div>`;
+  }
+
+  return`<div class="prov-card"><div class="prov-header"><span class="prov-name">${p.name}</span>${badge}</div>${rows}</div>`;
+}
+
+function updateProviders(providers){
+  const el=document.getElementById('providerCards');
+  if(!providers||!providers.length){el.innerHTML='<div class="empty-msg">No API providers configured.<br>Go to ⚙ Settings to add your API keys.</div>';return}
+  el.innerHTML=providers.map(renderProviderCard).join('');
+}
+
+// ── History / Chart ──
+let historyData=null,currentDays=7,histOpen=false,dailyOpen=false,chartDaily=[];
+const chartPad={t:10,b:18,l:6,r:6};
+
+document.getElementById('histToggle').addEventListener('click',()=>{histOpen=!histOpen;document.getElementById('histPanel').classList.toggle('open',histOpen);document.getElementById('histArrow').classList.toggle('open',histOpen);if(histOpen&&historyData)drawChart()});
+document.getElementById('dailyToggle').addEventListener('click',()=>{dailyOpen=!dailyOpen;document.getElementById('dailyPanel').classList.toggle('open',dailyOpen);document.getElementById('dailyArrow').classList.toggle('open',dailyOpen)});
+document.querySelectorAll('.chart-tabs .tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.chart-tabs .tab').forEach(b=>b.classList.remove('active'));t.classList.add('active');currentDays=parseInt(t.dataset.days);if(historyData)drawChart()})});
+
+function aggregateByDate(records,days){
+  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-days);const cutStr=cutoff.toISOString().slice(0,10);
+  const byDate={};for(const r of records){if(r.date<cutStr)continue;if(!byDate[r.date])byDate[r.date]={date:r.date,tokens:0,cost:0,reqs:0};byDate[r.date].tokens+=r.totalTokens||0;byDate[r.date].cost+=r.costTotal||0;byDate[r.date].reqs++}
+  const result=[];const d=new Date(cutoff);const today=new Date().toISOString().slice(0,10);
+  while(d.toISOString().slice(0,10)<=today){const ds=d.toISOString().slice(0,10);result.push(byDate[ds]||{date:ds,tokens:0,cost:0,reqs:0});d.setDate(d.getDate()+1)}
+  return result;
+}
+
+function drawChart(){
+  if(!historyData||!historyData.length)return;
+  chartDaily=aggregateByDate(historyData,currentDays);
+  const canvas=document.getElementById('chartCanvas');const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;const wrap=document.getElementById('chartWrap');
+  const w=wrap.clientWidth,h=120;canvas.width=w*dpr;canvas.height=h*dpr;canvas.style.width=w+'px';canvas.style.height=h+'px';
+  ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);
+  const cw=w-chartPad.l-chartPad.r,ch=h-chartPad.t-chartPad.b;
+  const maxT=Math.max(...chartDaily.map(d=>d.tokens),1);const maxC=Math.max(...chartDaily.map(d=>d.cost),0.001);
+  const n=chartDaily.length;const step=n>1?cw/(n-1):cw;
+
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=0.5;
+  for(let i=0;i<4;i++){const y=chartPad.t+ch*i/3;ctx.beginPath();ctx.moveTo(chartPad.l,y);ctx.lineTo(w-chartPad.r,y);ctx.stroke()}
+
+  ctx.beginPath();chartDaily.forEach((d,i)=>{const x=chartPad.l+i*step,y=chartPad.t+ch*(1-d.tokens/maxT);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+  ctx.strokeStyle='#818cf8';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.lineTo(chartPad.l+(n-1)*step,chartPad.t+ch);ctx.lineTo(chartPad.l,chartPad.t+ch);ctx.closePath();
+  const g1=ctx.createLinearGradient(0,chartPad.t,0,chartPad.t+ch);g1.addColorStop(0,'rgba(129,140,248,0.18)');g1.addColorStop(1,'rgba(129,140,248,0)');ctx.fillStyle=g1;ctx.fill();
+
+  ctx.beginPath();ctx.strokeStyle='#a78bfa';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+  chartDaily.forEach((d,i)=>{const x=chartPad.l+i*step,y=chartPad.t+ch*(1-d.cost/maxC);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+  ctx.stroke();ctx.setLineDash([]);
+
+  ctx.fillStyle='#444';ctx.font='7px -apple-system,sans-serif';ctx.textAlign='center';
+  const labelEvery=n<=7?1:n<=30?5:15;
+  chartDaily.forEach((d,i)=>{if(i%labelEvery===0||i===n-1)ctx.fillText(d.date.slice(5),chartPad.l+i*step,h-3)});
+
+  const totalT=chartDaily.reduce((s,d)=>s+d.tokens,0);const totalC=chartDaily.reduce((s,d)=>s+d.cost,0);const totalR=chartDaily.reduce((s,d)=>s+d.reqs,0);
+  document.getElementById('histSummary').textContent=`${fmt(totalT)} tok · ${fmtCost(totalC)} · ${totalR} reqs`;
+
+  const maxDT=Math.max(...chartDaily.map(d=>d.tokens),1);
+  document.getElementById('dailyPanel').innerHTML=chartDaily.slice().reverse().map(d=>`<div class="daily-row"><span class="dr-date">${d.date.slice(5)}</span><div class="dr-bar-bg"><div class="dr-bar" style="width:${(d.tokens/maxDT*100).toFixed(1)}%"></div></div><span class="dr-tokens">${fmt(d.tokens)}</span></div>`).join('');
+}
+
+// Tooltip
+const canvas=document.getElementById('chartCanvas');const tooltip=document.getElementById('chartTooltip');
+canvas.addEventListener('mousemove',e=>{
+  if(!chartDaily.length)return;const rect=canvas.getBoundingClientRect();const mx=e.clientX-rect.left;
+  const w=rect.width;const cw=w-chartPad.l-chartPad.r;const n=chartDaily.length;const step=n>1?cw/(n-1):cw;
+  const idx=Math.round((mx-chartPad.l)/step);if(idx<0||idx>=n){tooltip.style.display='none';return}
+  const d=chartDaily[idx];
+  document.getElementById('ttDate').textContent=d.date;document.getElementById('ttTokens').textContent=fmt(d.tokens);
+  document.getElementById('ttCost').textContent=fmtCost(d.cost);document.getElementById('ttReqs').textContent=String(d.reqs);
+  const tx=chartPad.l+idx*step;let left=tx+8;if(left+130>w)left=tx-138;
+  tooltip.style.left=left+'px';tooltip.style.top='5px';tooltip.style.display='block';
+
+  drawChart();
+  const dpr=window.devicePixelRatio||1;const ctx2=canvas.getContext('2d');ctx2.save();
+  ctx2.strokeStyle='rgba(255,255,255,0.15)';ctx2.lineWidth=1;ctx2.setLineDash([2,2]);
+  ctx2.beginPath();ctx2.moveTo(tx*dpr,chartPad.t*dpr);ctx2.lineTo(tx*dpr,(120-chartPad.b)*dpr);ctx2.stroke();ctx2.setLineDash([]);
+  const maxT=Math.max(...chartDaily.map(dd=>dd.tokens),1);const ch=120-chartPad.t-chartPad.b;
+  const dy=(chartPad.t+ch*(1-d.tokens/maxT))*dpr;
+  ctx2.beginPath();ctx2.arc(tx*dpr,dy,3*dpr,0,Math.PI*2);ctx2.fillStyle='#818cf8';ctx2.fill();
+  ctx2.beginPath();ctx2.arc(tx*dpr,dy,5*dpr,0,Math.PI*2);ctx2.strokeStyle='rgba(129,140,248,0.4)';ctx2.lineWidth=1.5;ctx2.stroke();
+  ctx2.restore();
+});
+canvas.addEventListener('mouseleave',()=>{tooltip.style.display='none';if(historyData)drawChart()});
+
+// ── Settings ──
+let providerRegistry={};
+let configData={providers:[],openclawPath:null};
+
+async function loadSettings(){
+  providerRegistry=await ipcRenderer.invoke('get-provider-registry');
+  configData=await ipcRenderer.invoke('get-config');
+
+  const sel=document.getElementById('addProviderType');
+  sel.innerHTML=Object.entries(providerRegistry).map(([id,def])=>`<option value="${id}">${def.name}</option>`).join('');
+
+  renderConfigCards();
+  document.getElementById('openclawPathInput').value=configData.openclawPath||'';
+}
+
+function renderConfigCards(){
+  const el=document.getElementById('providerConfigs');
+  if(!configData.providers.length){el.innerHTML='<div class="empty-msg">No providers added yet.</div>';return}
+  el.innerHTML=configData.providers.map((p,idx)=>{
+    const reg=providerRegistry[p.type];if(!reg)return'';
+    const fields=(reg.fields||[]).map(f=>{
+      const val=(p.config&&p.config[f.key])||'';
+      return`<div class="cfg-field"><label>${f.label}${f.optional?' (optional)':''}</label><input data-idx="${idx}" data-key="${f.key}" value="${val}" placeholder="${f.placeholder||''}"></div>`;
+    }).join('');
+    return`<div class="cfg-card"><div class="cfg-header"><span class="cfg-name">${p.name||reg.name}</span><button class="cfg-del" data-idx="${idx}">✕</button></div>${fields}</div>`;
+  }).join('');
+
+  el.querySelectorAll('.cfg-del').forEach(b=>{b.addEventListener('click',()=>{configData.providers.splice(parseInt(b.dataset.idx),1);renderConfigCards()})});
+  el.querySelectorAll('input[data-idx]').forEach(inp=>{inp.addEventListener('input',()=>{
+    const idx=parseInt(inp.dataset.idx);const key=inp.dataset.key;
+    if(!configData.providers[idx].config)configData.providers[idx].config={};
+    configData.providers[idx].config[key]=inp.value;
+  })});
+}
+
+document.getElementById('addProviderBtn').addEventListener('click',()=>{
+  const type=document.getElementById('addProviderType').value;
+  const reg=providerRegistry[type];if(!reg)return;
+  configData.providers.push({id:`${type}_${Date.now()}`,type,name:reg.name,config:{}});
+  renderConfigCards();
+});
+
+document.getElementById('saveConfigBtn').addEventListener('click',async()=>{
+  configData.openclawPath=document.getElementById('openclawPathInput').value||null;
+  await ipcRenderer.invoke('save-config',configData);
+  document.getElementById('saveConfigBtn').textContent='✓ Saved';
+  setTimeout(()=>{document.getElementById('saveConfigBtn').textContent='Save'},1500);
+});
+
+// ── Data path ──
+document.getElementById('pathBtn').addEventListener('click',async()=>{const p=await ipcRenderer.invoke('get-data-path');if(p)ipcRenderer.invoke('open-path',p)});
+
+// ── Refresh ──
+async function refreshLive(){try{const r=await ipcRenderer.invoke('get-live');if(r.ok)updateLive(r.sessions)}catch{}}
+async function refreshHistory(){try{const r=await ipcRenderer.invoke('get-history');if(r.ok){historyData=r.records;if(histOpen)drawChart()}}catch{}}
+async function refreshProviders(){try{const r=await ipcRenderer.invoke('get-providers');if(r.ok)updateProviders(r.providers)}catch{}}
+async function refreshAll(){
+  document.getElementById('footerInfo').innerHTML='<span class="spinner"></span>';
+  await Promise.all([refreshLive(),refreshHistory()]);
+  if(currentView==='providers')await refreshProviders();
+  document.getElementById('footerInfo').textContent=new Date().toLocaleTimeString();
+}
+
+ipcRenderer.on('data-changed',()=>{refreshLive();refreshHistory()});
+refreshAll();
+setInterval(refreshLive,10000);
+setInterval(refreshHistory,60000);
+</script>
+</body>
+</html>

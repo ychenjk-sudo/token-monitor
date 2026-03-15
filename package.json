@@ -1,0 +1,37 @@
+{
+  "name": "token-monitor",
+  "version": "1.0.0",
+  "description": "A macOS menubar app to monitor AI token usage across multiple providers (OpenClaw, DeepSeek, Qwen, Z.ai, MiniMax, etc.)",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --mac",
+    "build:dmg": "electron-builder --mac dmg",
+    "build:zip": "electron-builder --mac zip"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.token-monitor.app",
+    "productName": "Token Monitor",
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "assets/icon.icns",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    }
+  }
+}
