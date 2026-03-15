@@ -1,25 +1,31 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Notification, nativeTheme, Tray, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const config = require('./config.js');
-const { PROVIDER_REGISTRY } = require('./providers.js');
+const { PROVIDER_REGISTRY, getUsdToCny } = require('./providers.js');
 const openclaw = require('./openclaw.js');
 
 let win;
+let tray = null;
 let sessionsDir = null;
+let alertCooldowns = {}; // provider -> last alert timestamp
 
 // ── Window ───────────────────────────────────────────────────
 
 function createWindow() {
+  const cfg = config.load();
+  const theme = cfg.settings?.theme || 'system';
+  const isDark = theme === 'dark' || (theme === 'system' && nativeTheme.shouldUseDarkColors);
+
   win = new BrowserWindow({
-    width: 320,
-    height: 340,
+    width: 340,
+    height: 380,
     alwaysOnTop: true,
     frame: false,
     transparent: true,
     resizable: true,
     hasShadow: true,
-    vibrancy: 'under-window',
+    vibrancy: isDark ? 'under-window' : 'sidebar',
     visualEffectState: 'active',
     webPreferences: { nodeIntegration: true, contextIsolation: false },
   });
@@ -28,11 +34,56 @@ function createWindow() {
   win.on('closed', () => { win = null; });
 }
 
+// ── Tray (menubar) ───────────────────────────────────────────
+
+function createTray() {
+  // Use a template image for macOS menubar (16x16)
+  const iconPath = path.join(__dirname, '..', 'assets', 'trayTemplate.png');
+  if (!fs.existsSync(iconPath)) return; // Skip if no icon
+
+  tray = new Tray(iconPath);
+  tray.setToolTip('Token Monitor');
+
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'Show Window', click: () => { if (win) win.show(); else createWindow(); } },
+    { label: 'Refresh', click: () => { if (win) win.webContents.send('data-changed'); } },
+    { type: 'separator' },
+    { label: 'Quit', click: () => app.quit() },
+  ]);
+  tray.setContextMenu(contextMenu);
+  tray.on('click', () => {
+    if (win) { win.isVisible() ? win.hide() : win.show(); }
+    else createWindow();
+  });
+}
+
+// ── Alerts (macOS notifications) ─────────────────────────────
+
+function sendAlert(providerId, title, body) {
+  const now = Date.now();
+  const cooldown = 3600000; // 1 hour
+  if (alertCooldowns[providerId] && now - alertCooldowns[providerId] < cooldown) return;
+  alertCooldowns[providerId] = now;
+
+  if (Notification.isSupported()) {
+    new Notification({ title: `Token Monitor: ${title}`, body, silent: false }).show();
+  }
+}
+
 // ── IPC: Live status ─────────────────────────────────────────
 
 ipcMain.handle('get-live', async () => {
   try {
-    return { ok: true, sessions: openclaw.readLiveStatus(sessionsDir) };
+    const sessions = openclaw.readLiveStatus(sessionsDir);
+    // Check for high token usage alerts
+    const cfg = config.load();
+    const tokenAlert = parseInt(cfg.settings?.tokenAlertThreshold) || 50000;
+    for (const s of sessions) {
+      if (s.total > tokenAlert) {
+        sendAlert(`session:${s.sessionKey}`, 'High Token Usage', `${s.model}: ${(s.total/1000).toFixed(1)}K tokens in current session`);
+      }
+    }
+    return { ok: true, sessions };
   } catch (e) {
     return { ok: false, error: e.message };
   }
@@ -62,6 +113,10 @@ ipcMain.handle('get-providers', async () => {
       if (!reg) { results.push({ provider: p.id, name: p.name || p.type, error: 'Unknown provider type' }); continue; }
       try {
         const data = await reg.fetch(p.config || {});
+        // Check for low balance alerts
+        if (data._alert) {
+          sendAlert(p.id, p.name || reg.name, data._alert);
+        }
         results.push({ provider: p.id, name: p.name || reg.name, type: reg.type, ...data });
       } catch (e) {
         results.push({ provider: p.id, name: p.name || reg.name, error: e.message });
@@ -74,9 +129,20 @@ ipcMain.handle('get-providers', async () => {
   }
 });
 
-// ── IPC: Config (settings) ───────────────────────────────────
+// ── IPC: Config ──────────────────────────────────────────────
 
-ipcMain.handle('get-config', async () => config.load());
+ipcMain.handle('get-config', async () => {
+  const cfg = config.load();
+  // Mask API keys for display
+  const masked = JSON.parse(JSON.stringify(cfg));
+  for (const p of (masked.providers || [])) {
+    if (p.config?.apiKey) {
+      const k = p.config.apiKey;
+      p.config._apiKeyMasked = k.length > 8 ? k.slice(0, 4) + '****' + k.slice(-4) : '****';
+    }
+  }
+  return masked;
+});
 
 ipcMain.handle('save-config', async (_, newConfig) => {
   config.save(newConfig);
@@ -92,8 +158,19 @@ ipcMain.handle('get-provider-registry', async () => {
 });
 
 ipcMain.handle('get-data-path', async () => config.getDataDir());
-
 ipcMain.handle('open-path', async (_, p) => { shell.openPath(p); });
+
+ipcMain.handle('get-exchange-rate', async () => {
+  const rate = await getUsdToCny();
+  return { usdToCny: rate };
+});
+
+ipcMain.handle('get-theme', async () => {
+  const cfg = config.load();
+  const theme = cfg.settings?.theme || 'system';
+  const isDark = theme === 'dark' || (theme === 'system' && nativeTheme.shouldUseDarkColors);
+  return { theme, isDark };
+});
 
 // ── File watcher ─────────────────────────────────────────────
 
@@ -114,16 +191,22 @@ function startWatcher() {
   try { fs.watch(sessionsDir, { persistent: false }, (_, f) => { if (f && (f.endsWith('.jsonl') || f === 'sessions.json')) notify(); }); } catch {}
 }
 
+// ── Theme change listener ────────────────────────────────────
+
+nativeTheme.on('updated', () => {
+  if (win && !win.isDestroyed()) {
+    win.webContents.send('theme-changed', nativeTheme.shouldUseDarkColors);
+  }
+});
+
 // ── App lifecycle ────────────────────────────────────────────
 
 app.whenReady().then(() => {
   config.init(app.getPath('userData'));
 
-  // Find OpenClaw sessions
   const cfg = config.load();
   sessionsDir = cfg.openclawPath || openclaw.findOpenClawSessions();
 
-  // Initial scan
   if (sessionsDir) {
     let store = config.loadHistory();
     store = openclaw.scanSessions(sessionsDir, store);
@@ -131,8 +214,12 @@ app.whenReady().then(() => {
   }
 
   startWatcher();
+  createTray();
   createWindow();
 });
 
-app.on('window-all-closed', () => app.quit());
+app.on('window-all-closed', () => {
+  // Don't quit on window close if tray exists
+  if (!tray) app.quit();
+});
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });

@@ -9,130 +9,132 @@ html,body{background:transparent;font-family:-apple-system,BlinkMacSystemFont,'S
 body::-webkit-scrollbar{width:3px}
 body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
 
-.container{
-  background:rgba(20,20,26,0.86);
-  backdrop-filter:blur(40px) saturate(180%);
-  -webkit-backdrop-filter:blur(40px) saturate(180%);
-  border:1px solid rgba(255,255,255,0.07);
-  border-radius:14px;padding:12px 14px;
-  display:flex;flex-direction:column;gap:6px;
-  min-height:100vh;
+/* ── Theme variables ── */
+:root{
+  --bg:rgba(20,20,26,0.86);--border:rgba(255,255,255,0.07);
+  --card:rgba(255,255,255,0.025);--card-border:rgba(255,255,255,0.04);
+  --text:#e0e0e0;--text2:#888;--text3:#555;
+  --accent:#4ade80;--accent-bg:rgba(74,222,128,0.08);
+  --cost:#a78bfa;
+}
+body.light{
+  --bg:rgba(245,245,250,0.92);--border:rgba(0,0,0,0.08);
+  --card:rgba(0,0,0,0.03);--card-border:rgba(0,0,0,0.06);
+  --text:#1a1a2e;--text2:#666;--text3:#999;
+  --accent:#16a34a;--accent-bg:rgba(22,163,74,0.08);
+  --cost:#7c3aed;
 }
 
+.container{
+  background:var(--bg);
+  backdrop-filter:blur(40px) saturate(180%);
+  -webkit-backdrop-filter:blur(40px) saturate(180%);
+  border:1px solid var(--border);
+  border-radius:14px;padding:12px 14px;
+  display:flex;flex-direction:column;gap:6px;
+  min-height:100vh;color:var(--text);
+}
+
+/* ── Titlebar ── */
 .titlebar{-webkit-app-region:drag;display:flex;align-items:center;justify-content:space-between;padding-bottom:2px}
 .tl{display:flex;align-items:center;gap:6px}
 .close-btn{-webkit-app-region:no-drag;width:11px;height:11px;border-radius:50%;background:#ff5f57;border:none;cursor:pointer;transition:opacity .15s}
 .close-btn:hover{opacity:.7}
-.title{font-size:12px;font-weight:600;color:#fff;letter-spacing:.2px}
-.live-dot{width:5px;height:5px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite}
+.title{font-size:12px;font-weight:600;letter-spacing:.2px}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
+/* ── Tabs ── */
 .tabs{display:flex;gap:3px;-webkit-app-region:no-drag}
-.tab{font-size:9px;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06);color:#666;cursor:pointer;font-family:inherit;font-weight:500;transition:all .15s}
-.tab:hover{color:#aaa;background:rgba(255,255,255,0.08)}
-.tab.active{color:#4ade80;background:rgba(74,222,128,0.08);border-color:rgba(74,222,128,0.15)}
+.tab{font-size:9px;padding:2px 7px;border-radius:5px;background:var(--card);border:1px solid var(--card-border);color:var(--text3);cursor:pointer;font-family:inherit;font-weight:500;transition:all .15s}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--accent);background:var(--accent-bg);border-color:rgba(74,222,128,0.15)}
 
-.model-row{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.04);border-radius:7px}
+/* ── Model rows ── */
+.model-row{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:var(--card);border:1px solid var(--card-border);border-radius:7px}
 .mr-left{display:flex;flex-direction:column}
-.mr-name{font-size:9px;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.mr-name{font-size:9px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
 .mr-name .est{font-size:7px;color:#f59e0b;margin-left:2px}
-.mr-right{display:flex;gap:6px;align-items:center}
-.mr-stat{text-align:right}
-.mr-stat .l{font-size:7px;color:#555;text-transform:uppercase;letter-spacing:.3px;line-height:1}
-.mr-stat .v{font-size:11px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums;line-height:1.3}
-.mr-stat .v.cost{color:#a78bfa;font-size:10px}
+.mr-right{display:flex;gap:8px;align-items:center}
+.ms{display:flex;flex-direction:column;align-items:flex-end}
+.ms .lbl{font-size:7px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;line-height:1}
+.ms .val{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.3}
+.ms .val.cost{color:var(--cost)}
 
-.totals{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:7px}
-.totals .tl2{font-size:9px;color:#888;font-weight:600}
-.totals .tv{font-size:13px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums}
-.totals .tv.cost{color:#a78bfa}
+/* ── Totals ── */
+.totals-bar{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:var(--card);border:1px solid var(--card-border);border-radius:7px}
+.tb-label{font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;font-weight:500}
+.tb-value{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.tb-value.cost{color:var(--cost)}
 
-.divider{height:1px;background:rgba(255,255,255,0.05);margin:2px 0}
+/* ── History ── */
+.hist-toggle{font-size:9px;color:var(--text3);cursor:pointer;display:flex;align-items:center;gap:4px;transition:color .15s;padding:2px 0}
+.hist-toggle:hover{color:var(--text2)}
+.hist-toggle .arrow{transition:transform .2s;display:inline-block;font-size:7px}
+.hist-toggle .arrow.open{transform:rotate(90deg)}
+.hist-panel{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.hist-panel.open{max-height:2000px;overflow-y:auto}
+.hist-tabs{display:flex;gap:3px;margin:4px 0}
+.chart-wrap{position:relative;height:100px;margin:4px 0}
+canvas{width:100%!important;height:100%!important;border-radius:6px}
+.chart-tooltip{position:absolute;pointer-events:none;background:rgba(0,0,0,0.85);color:#fff;font-size:9px;padding:4px 8px;border-radius:5px;white-space:nowrap;opacity:0;transition:opacity .15s;z-index:10}
 
-.prov-card{padding:6px 8px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.04);border-radius:7px;display:flex;flex-direction:column;gap:3px}
+/* ── Provider cards ── */
+.prov-card{background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:3px}
 .prov-header{display:flex;justify-content:space-between;align-items:center}
-.prov-name{font-size:10px;font-weight:600;color:#ccc}
-.prov-badge{font-size:7px;padding:1px 5px;border-radius:4px;font-weight:500}
-.prov-badge.pro{color:#4ade80;background:rgba(74,222,128,0.1)}
-.prov-badge.plus{color:#60a5fa;background:rgba(96,165,250,0.1)}
-.prov-badge.payg{color:#facc15;background:rgba(250,204,21,0.1)}
-.prov-badge.credits{color:#f472b6;background:rgba(244,114,182,0.1)}
-.prov-badge.err{color:#f87171;background:rgba(248,113,113,0.1)}
-.prov-badge.custom{color:#94a3b8;background:rgba(148,163,184,0.1)}
-.prov-row{display:flex;justify-content:space-between;align-items:center;font-size:9px}
-.prov-row .pl{color:#666}
-.prov-row .pv{color:#bbb;font-weight:600;font-variant-numeric:tabular-nums}
-.prov-row .pv.warn{color:#f87171}
-.prov-row .pv.ok{color:#4ade80}
-
-.quota-bar-bg{width:100%;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin:2px 0}
-.quota-bar{height:100%;border-radius:3px;transition:width .5s ease}
+.prov-name{font-size:10px;font-weight:600}
+.prov-badge{font-size:8px;padding:1px 5px;border-radius:4px}
+.prov-badge.sub{color:#60a5fa;background:rgba(96,165,250,0.1)}
+.prov-badge.payg{color:#4ade80;background:rgba(74,222,128,0.1)}
+.prov-badge.plan{color:#facc15;background:rgba(250,204,21,0.1)}
+.prov-badge.credits{color:#f97316;background:rgba(249,115,22,0.1)}
+.prov-row{display:flex;justify-content:space-between;font-size:9px}
+.pl{color:var(--text3)}
+.pv{color:var(--text2);font-variant-numeric:tabular-nums}
+.pv.ok{color:#4ade80}.pv.warn{color:#f87171}
+.quota-bar-bg{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin:2px 0}
+.quota-bar{height:100%;border-radius:2px;transition:width .4s ease}
 .quota-bar.green{background:linear-gradient(90deg,#22c55e,#4ade80)}
 .quota-bar.yellow{background:linear-gradient(90deg,#eab308,#facc15)}
 .quota-bar.red{background:linear-gradient(90deg,#dc2626,#f87171)}
-.quota-bar.blue{background:linear-gradient(90deg,#3b82f6,#60a5fa)}
-.quota-bar.purple{background:linear-gradient(90deg,#7c3aed,#a78bfa)}
+.prov-alert{font-size:8px;color:#f87171;background:rgba(248,113,113,0.1);padding:2px 6px;border-radius:4px;margin-top:2px}
 
-.section-toggle{display:flex;align-items:center;gap:4px;cursor:pointer;padding:2px 0;-webkit-app-region:no-drag}
-.section-toggle:hover .stxt{color:#aaa}
-.section-toggle .arrow{font-size:7px;transition:transform .2s;display:inline-block;color:#555}
-.section-toggle .arrow.open{transform:rotate(90deg)}
-.section-toggle .stxt{font-size:9px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:.6px;transition:color .15s}
+/* ── Settings ── */
+.settings-section{display:flex;flex-direction:column;gap:6px}
+.setting-group{background:var(--card);border:1px solid var(--card-border);border-radius:8px;padding:8px 10px}
+.setting-group h3{font-size:10px;font-weight:600;margin-bottom:6px;color:var(--text2)}
+.setting-row{display:flex;justify-content:space-between;align-items:center;font-size:9px;padding:3px 0}
+.setting-row label{color:var(--text2)}
+.setting-row select,.setting-row input{
+  font-size:9px;padding:2px 6px;border-radius:4px;
+  background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+  color:var(--text);font-family:inherit;outline:none;
+}
+.setting-row select{-webkit-appearance:none;padding-right:14px}
+.btn-row{display:flex;gap:4px;margin-top:4px}
+.btn{font-size:9px;padding:3px 10px;border-radius:5px;border:1px solid var(--card-border);background:var(--card);color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s}
+.btn:hover{background:rgba(255,255,255,0.08);color:var(--text)}
+.btn.primary{background:var(--accent-bg);color:var(--accent);border-color:rgba(74,222,128,0.2)}
+.btn.danger{color:#f87171;border-color:rgba(248,113,113,0.2)}
 
-.collapsible{max-height:0;overflow:hidden;transition:max-height .3s ease}
-.collapsible.open{max-height:3000px}
+/* ── Onboarding ── */
+.onboarding{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:30px 20px;text-align:center}
+.onboarding h2{font-size:14px;font-weight:600}
+.onboarding p{font-size:10px;color:var(--text2);line-height:1.5}
+.onboarding .step{display:flex;align-items:flex-start;gap:8px;text-align:left;width:100%}
+.onboarding .step-num{font-size:10px;font-weight:700;color:var(--accent);min-width:16px}
+.onboarding .step-text{font-size:9px;color:var(--text2);line-height:1.4}
 
-.chart-header{display:flex;justify-content:space-between;align-items:center}
-.chart-tabs{display:flex;gap:3px}
-.chart-wrap{position:relative;width:100%;height:120px}
-.chart-wrap canvas{width:100%;height:100%}
-.chart-tooltip{position:absolute;pointer-events:none;background:rgba(0,0,0,0.88);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:5px 8px;font-size:9px;color:#ddd;white-space:nowrap;display:none;z-index:10;backdrop-filter:blur(8px)}
-.chart-tooltip .tt-date{font-weight:600;color:#fff;margin-bottom:2px}
-.chart-tooltip .tt-row{display:flex;justify-content:space-between;gap:12px}
-.chart-tooltip .tt-label{color:#888}
-.chart-tooltip .tt-val{font-weight:600;font-variant-numeric:tabular-nums}
-.chart-tooltip .tt-val.tok{color:#818cf8}
-.chart-tooltip .tt-val.cost{color:#a78bfa}
-.chart-legend{display:flex;gap:8px;justify-content:center;font-size:8px;color:#666;margin-top:2px}
-.chart-legend .dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:2px;vertical-align:middle}
-
-.daily-row{display:grid;grid-template-columns:56px 1fr 50px;align-items:center;gap:4px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.02);font-size:9px}
-.daily-row:last-child{border-bottom:none}
-.dr-date{color:#666;font-variant-numeric:tabular-nums}
-.dr-bar-bg{height:4px;background:rgba(255,255,255,0.04);border-radius:2px;overflow:hidden}
-.dr-bar{height:100%;border-radius:2px;background:linear-gradient(90deg,#6366f1,#818cf8);transition:width .4s}
-.dr-tokens{color:#999;text-align:right;font-variant-numeric:tabular-nums}
-
-/* Settings */
-.settings-panel{display:flex;flex-direction:column;gap:6px;padding-top:4px}
-.settings-panel h3{font-size:10px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-.add-row{display:flex;gap:4px;align-items:center}
-.add-row select,.add-row button{font-size:9px;padding:3px 6px;border-radius:5px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:#ccc;font-family:inherit;cursor:pointer}
-.add-row select:focus,.add-row button:focus{outline:none;border-color:rgba(74,222,128,0.3)}
-.add-row button{background:rgba(74,222,128,0.1);color:#4ade80;font-weight:600}
-.add-row button:hover{background:rgba(74,222,128,0.2)}
-.cfg-card{padding:6px 8px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.04);border-radius:7px;display:flex;flex-direction:column;gap:3px}
-.cfg-card .cfg-header{display:flex;justify-content:space-between;align-items:center}
-.cfg-card .cfg-name{font-size:10px;font-weight:600;color:#ccc}
-.cfg-card .cfg-del{font-size:8px;color:#f87171;cursor:pointer;padding:1px 4px;border-radius:3px;background:rgba(248,113,113,0.1);border:none;font-family:inherit}
-.cfg-card .cfg-del:hover{background:rgba(248,113,113,0.2)}
-.cfg-field{display:flex;flex-direction:column;gap:1px}
-.cfg-field label{font-size:8px;color:#666;text-transform:uppercase;letter-spacing:.3px}
-.cfg-field input{font-size:9px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#ddd;font-family:inherit;width:100%}
-.cfg-field input:focus{outline:none;border-color:rgba(74,222,128,0.3)}
-.cfg-field input::placeholder{color:#444}
-.save-btn{font-size:9px;padding:4px 10px;border-radius:5px;border:1px solid rgba(74,222,128,0.2);background:rgba(74,222,128,0.1);color:#4ade80;font-weight:600;cursor:pointer;font-family:inherit;align-self:flex-end}
-.save-btn:hover{background:rgba(74,222,128,0.2)}
-
-.empty-msg{font-size:10px;color:#555;text-align:center;padding:12px 8px}
-
+/* ── Footer ── */
 .footer{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:2px}
-.footer .fi{font-size:8px;color:#444}
-.footer .fb{-webkit-app-region:no-drag;font-size:8px;color:#555;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.05);border-radius:4px;padding:2px 6px;cursor:pointer;font-family:inherit;transition:all .15s}
-.footer .fb:hover{color:#aaa;background:rgba(255,255,255,0.08)}
+.footer .info{font-size:8px;color:var(--text3)}
+.footer .refresh-btn{-webkit-app-region:no-drag;font-size:8px;color:var(--text3);background:var(--card);border:1px solid var(--card-border);border-radius:4px;padding:2px 6px;cursor:pointer;font-family:inherit;transition:all .15s}
+.footer .refresh-btn:hover{color:var(--text2)}
 
-.spinner{display:inline-block;width:8px;height:8px;border:1.5px solid rgba(255,255,255,0.1);border-top-color:#4ade80;border-radius:50%;animation:spin .8s linear infinite}
+.spinner{display:inline-block;width:8px;height:8px;border:1.5px solid rgba(255,255,255,0.1);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+.page{display:none}.page.active{display:flex;flex-direction:column;gap:6px}
 </style>
 </head>
 <body>
@@ -144,311 +146,460 @@ body::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px
       <span class="live-dot"></span>
     </div>
     <div class="tabs">
-      <button class="tab active" data-view="live">Live</button>
-      <button class="tab" data-view="providers">APIs</button>
-      <button class="tab" data-view="settings">⚙</button>
+      <button class="tab active" data-page="live">Live</button>
+      <button class="tab" data-page="apis">APIs</button>
+      <button class="tab" data-page="settings">⚙</button>
     </div>
   </div>
 
-  <!-- LIVE -->
-  <div id="viewLive">
-    <div id="modelsSection" style="display:flex;flex-direction:column;gap:4px"></div>
-    <div class="totals" id="totalsBar">
-      <span class="tl2">Total</span>
-      <div style="display:flex;gap:10px;align-items:center">
-        <span class="tv" id="liveTotal">--</span>
-        <span class="tv cost" id="liveCost">--</span>
+  <!-- ── Live ── -->
+  <div class="page active" id="page-live">
+    <div id="modelsSection"></div>
+    <div class="totals-bar">
+      <div><span class="tb-label">Total</span></div>
+      <div style="display:flex;gap:12px">
+        <span class="tb-value" id="liveTotal">--</span>
+        <span class="tb-value cost" id="liveCost">--</span>
       </div>
     </div>
-    <div class="section-toggle" id="histToggle"><span class="arrow" id="histArrow">▶</span><span class="stxt">History</span></div>
-    <div class="collapsible" id="histPanel">
-      <div style="display:flex;flex-direction:column;gap:6px;padding-top:4px">
-        <div class="chart-header">
-          <div class="chart-tabs"><button class="tab active" data-days="7">7D</button><button class="tab" data-days="30">30D</button><button class="tab" data-days="90">90D</button></div>
-          <span style="font-size:8px;color:#555" id="histSummary"></span>
-        </div>
-        <div class="chart-wrap" id="chartWrap">
-          <canvas id="chartCanvas"></canvas>
-          <div class="chart-tooltip" id="chartTooltip">
-            <div class="tt-date" id="ttDate"></div>
-            <div class="tt-row"><span class="tt-label">Tokens</span><span class="tt-val tok" id="ttTokens"></span></div>
-            <div class="tt-row"><span class="tt-label">Cost</span><span class="tt-val cost" id="ttCost"></span></div>
-            <div class="tt-row"><span class="tt-label">Requests</span><span class="tt-val" id="ttReqs"></span></div>
-          </div>
-        </div>
-        <div class="chart-legend"><span><span class="dot" style="background:#818cf8"></span>Tokens</span><span><span class="dot" style="background:#a78bfa"></span>Cost</span></div>
-        <div class="section-toggle" id="dailyToggle"><span class="arrow" id="dailyArrow">▶</span><span class="stxt">Daily</span></div>
-        <div class="collapsible" id="dailyPanel"></div>
+    <div class="hist-toggle" id="histToggle">
+      <span class="arrow" id="histArrow">▶</span><span>History</span>
+    </div>
+    <div class="hist-panel" id="histPanel">
+      <div class="hist-tabs">
+        <button class="tab active" data-days="7">7D</button>
+        <button class="tab" data-days="30">30D</button>
+        <button class="tab" data-days="90">90D</button>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="histChart"></canvas>
+        <div class="chart-tooltip" id="chartTooltip"></div>
       </div>
     </div>
   </div>
 
-  <!-- PROVIDERS -->
-  <div id="viewProviders" style="display:none;flex-direction:column;gap:4px">
-    <div id="providerCards" style="display:flex;flex-direction:column;gap:4px"></div>
+  <!-- ── APIs ── -->
+  <div class="page" id="page-apis">
+    <div id="providersSection"></div>
   </div>
 
-  <!-- SETTINGS -->
-  <div id="viewSettings" style="display:none" class="settings-panel">
-    <h3>API Providers</h3>
-    <div class="add-row">
-      <select id="addProviderType"></select>
-      <button id="addProviderBtn">+ Add</button>
-    </div>
-    <div id="providerConfigs" style="display:flex;flex-direction:column;gap:4px"></div>
-    <button class="save-btn" id="saveConfigBtn">Save</button>
-    <div class="divider"></div>
-    <h3>OpenClaw Path</h3>
-    <div class="cfg-field"><input id="openclawPathInput" placeholder="Auto-detected (leave empty)"></div>
+  <!-- ── Settings ── -->
+  <div class="page" id="page-settings">
+    <div id="settingsContent"></div>
   </div>
 
   <div class="footer">
-    <span class="fi" id="footerInfo">--</span>
-    <div style="display:flex;gap:4px">
-      <button class="fb" id="pathBtn" title="Open data folder">📂</button>
-      <button class="fb" onclick="refreshAll()">↻</button>
-    </div>
+    <span class="info" id="footerInfo">--</span>
+    <button class="refresh-btn" onclick="refreshAll()">Refresh</button>
   </div>
 </div>
 
 <script>
-const { ipcRenderer, shell } = require('electron');
+const { ipcRenderer } = require('electron');
 
-function fmt(n){if(n==null||isNaN(n))return'--';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return String(Math.round(n))}
+// ── Helpers ──
+function fmt(n){if(n==null||isNaN(n))return'--';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return String(n)}
 function fmtCost(n){if(n==null||isNaN(n))return'--';if(n>=1)return'$'+n.toFixed(2);if(n>=0.01)return'$'+n.toFixed(3);return'$'+n.toFixed(4)}
-function shortModel(m){return(m||'').replace(/^(azure\/)?anthropic\//,'').replace(/-\d{8}$/,'').replace(/^nvidia\//,'')}
+function shortModel(m){return(m||'').replace(/^(azure\/)?anthropic\//,'').replace(/^(models\/)/,'').replace(/-\d{8}$/,'')}
 
-// ── Views ──
-let currentView='live';
-document.querySelectorAll('.tabs .tab[data-view]').forEach(t=>{
+// ── Page switching ──
+let currentPage='live';
+document.querySelectorAll('.tabs .tab[data-page]').forEach(t=>{
   t.addEventListener('click',()=>{
-    document.querySelectorAll('.tabs .tab[data-view]').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tabs .tab[data-page]').forEach(b=>b.classList.remove('active'));
     t.classList.add('active');
-    currentView=t.dataset.view;
-    document.getElementById('viewLive').style.display=currentView==='live'?'block':'none';
-    document.getElementById('viewProviders').style.display=currentView==='providers'?'flex':'none';
-    document.getElementById('viewSettings').style.display=currentView==='settings'?'flex':'none';
-    if(currentView==='providers')refreshProviders();
-    if(currentView==='settings')loadSettings();
+    currentPage=t.dataset.page;
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-'+currentPage).classList.add('active');
+    if(currentPage==='apis')refreshProviders();
+    if(currentPage==='settings')renderSettings();
   });
 });
 
-// ── Live ──
+// ── Theme ──
+async function applyTheme(){
+  const{isDark}=await ipcRenderer.invoke('get-theme');
+  document.body.classList.toggle('light',!isDark);
+}
+applyTheme();
+ipcRenderer.on('theme-changed',(e,isDark)=>{document.body.classList.toggle('light',!isDark)});
+
+// ══════════════════════════════════════════════════════════════
+// LIVE TAB
+// ══════════════════════════════════════════════════════════════
+
 function updateLive(sessions){
   const sec=document.getElementById('modelsSection');
-  if(!sessions||!sessions.length){sec.innerHTML='<div class="empty-msg">No OpenClaw sessions detected.<br>Start a session to see live token usage.</div>';return}
+  if(!sessions||!sessions.length){sec.innerHTML='<div style="font-size:10px;color:var(--text3);text-align:center;padding:20px">No OpenClaw sessions detected</div>';return}
   let totalTokens=0,totalCost=0;
   sec.innerHTML=sessions.map(s=>{
-    totalTokens+=s.total||0;totalCost+=s.cost||0;
-    const est=s.estimated?'<span class="est">~est</span>':'';
-    return`<div class="model-row"><div class="mr-left"><span class="mr-name" title="${s.model}">${shortModel(s.model)}${est}</span></div><div class="mr-right"><div class="mr-stat"><div class="l">In</div><div class="v">${fmt(s.input)}</div></div><div class="mr-stat"><div class="l">Out</div><div class="v">${fmt(s.output)}</div></div><div class="mr-stat"><div class="l">Cost</div><div class="v cost">${fmtCost(s.cost)}</div></div></div></div>`;
+    const cost=s.cost||0;totalTokens+=s.total||0;totalCost+=cost;
+    const estTag=s.estimated?'<span class="est">~est</span>':'';
+    return`<div class="model-row">
+      <div class="mr-left"><span class="mr-name" title="${s.model}">${shortModel(s.model)}${estTag}</span></div>
+      <div class="mr-right">
+        <div class="ms"><span class="lbl">In</span><span class="val">${fmt(s.input)}</span></div>
+        <div class="ms"><span class="lbl">Out</span><span class="val">${fmt(s.output)}</span></div>
+        <div class="ms"><span class="lbl">Cost</span><span class="val cost">${fmtCost(cost)}</span></div>
+      </div>
+    </div>`;
   }).join('');
   document.getElementById('liveTotal').textContent=fmt(totalTokens);
   document.getElementById('liveCost').textContent=fmtCost(totalCost);
 }
 
-// ── Providers ──
-function renderProviderCard(p){
-  if(p.error)return`<div class="prov-card"><div class="prov-header"><span class="prov-name">${p.name||p.provider}</span><span class="prov-badge err">error</span></div><div class="prov-row"><span class="pl">${p.error}</span></div></div>`;
-  let badge='',rows='';
-  const t=p.type||'';
+// ── History chart ──
+let histData=null,histDays=7,histExpanded=false;
 
-  // DeepSeek
-  if(p.totalBalance!=null&&p.currency){
-    badge=`<span class="prov-badge payg">pay-as-you-go</span>`;
-    const bal=p.totalBalance;const ref=Math.max(p.toppedUpBalance||10,bal);
-    const pct=ref>0?(bal/ref*100):0;const cls=pct>50?'green':pct>20?'yellow':'red';
-    rows=`<div class="prov-row"><span class="pl">Status</span><span class="pv ${p.available?'ok':'warn'}">${p.available?'Active':'Inactive'}</span></div>
-      <div class="prov-row"><span class="pl">Balance</span><span class="pv">${p.currency} ${bal.toFixed(2)}</span></div>
-      <div class="quota-bar-bg"><div class="quota-bar ${cls}" style="width:${pct}%"></div></div>`;
-  }
-  // Z.ai
-  else if(p.windows){
-    badge=`<span class="prov-badge pro">${p.plan||'pro'}</span>`;
-    for(const w of p.windows){
-      const pct=w.pct||0;const cls=pct<60?'green':pct<85?'yellow':'red';
-      rows+=`<div class="prov-row"><span class="pl">${w.label}</span><span class="pv">${pct.toFixed(0)}%</span></div><div class="quota-bar-bg"><div class="quota-bar ${cls}" style="width:${pct}%"></div></div>`;
-      if(w.remaining!=null)rows+=`<div class="prov-row"><span class="pl">Remaining</span><span class="pv ok">${w.remaining}/${w.total}</span></div>`;
-    }
-  }
-  // Laozhang
-  else if(p.totalUsage!=null){
-    badge=`<span class="prov-badge payg">pay-as-you-go</span>`;
-    const pct=Math.min(100,(p.totalUsage/10)*100);
-    rows=`<div class="prov-row"><span class="pl">Usage</span><span class="pv">${fmtCost(p.totalUsage)}</span></div><div class="quota-bar-bg"><div class="quota-bar purple" style="width:${pct}%"></div></div>`;
-  }
-  // Qwen
-  else if(p.keyStatus){
-    badge=`<span class="prov-badge payg">pay-as-you-go</span>`;
-    const ks=p.keyStatus==='active';
-    rows=`<div class="prov-row"><span class="pl">Key</span><span class="pv ${ks?'ok':'warn'}">${ks?'Active':'Invalid'}</span></div>`;
-    if(p.cashBalance!=null){
-      const pct=Math.min(100,(p.cashBalance/50)*100);const cls=pct>50?'green':pct>20?'yellow':'red';
-      rows+=`<div class="prov-row"><span class="pl">Balance</span><span class="pv">¥${p.cashBalance.toFixed(2)}</span></div><div class="quota-bar-bg"><div class="quota-bar ${cls}" style="width:${pct}%"></div></div>`;
-    }
-    if(p.monthlySpend!=null)rows+=`<div class="prov-row"><span class="pl">Monthly</span><span class="pv">¥${p.monthlySpend.toFixed(2)}</span></div>`;
-  }
-  // MiniMax
-  else if(p.quota){
-    badge=`<span class="prov-badge plus">${p.plan||'Plan'}</span>`;
-    rows=`<div class="prov-row"><span class="pl">Quota</span><span class="pv">${p.quota}</span></div>`;
-  }
-  // Generic
-  else{
-    badge=`<span class="prov-badge custom">${t}</span>`;
-    if(p.note)rows=`<div class="prov-row"><span class="pl">${p.note}</span></div>`;
-  }
+document.getElementById('histToggle').addEventListener('click',()=>{
+  histExpanded=!histExpanded;
+  document.getElementById('histPanel').classList.toggle('open',histExpanded);
+  document.getElementById('histArrow').classList.toggle('open',histExpanded);
+  if(histExpanded&&histData)drawChart();
+});
 
-  return`<div class="prov-card"><div class="prov-header"><span class="prov-name">${p.name}</span>${badge}</div>${rows}</div>`;
-}
+document.querySelectorAll('.hist-tabs .tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.hist-tabs .tab').forEach(b=>b.classList.remove('active'));
+    t.classList.add('active');
+    histDays=parseInt(t.dataset.days);
+    drawChart();
+  });
+});
 
-function updateProviders(providers){
-  const el=document.getElementById('providerCards');
-  if(!providers||!providers.length){el.innerHTML='<div class="empty-msg">No API providers configured.<br>Go to ⚙ Settings to add your API keys.</div>';return}
-  el.innerHTML=providers.map(renderProviderCard).join('');
-}
-
-// ── History / Chart ──
-let historyData=null,currentDays=7,histOpen=false,dailyOpen=false,chartDaily=[];
-const chartPad={t:10,b:18,l:6,r:6};
-
-document.getElementById('histToggle').addEventListener('click',()=>{histOpen=!histOpen;document.getElementById('histPanel').classList.toggle('open',histOpen);document.getElementById('histArrow').classList.toggle('open',histOpen);if(histOpen&&historyData)drawChart()});
-document.getElementById('dailyToggle').addEventListener('click',()=>{dailyOpen=!dailyOpen;document.getElementById('dailyPanel').classList.toggle('open',dailyOpen);document.getElementById('dailyArrow').classList.toggle('open',dailyOpen)});
-document.querySelectorAll('.chart-tabs .tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.chart-tabs .tab').forEach(b=>b.classList.remove('active'));t.classList.add('active');currentDays=parseInt(t.dataset.days);if(historyData)drawChart()})});
-
-function aggregateByDate(records,days){
-  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-days);const cutStr=cutoff.toISOString().slice(0,10);
-  const byDate={};for(const r of records){if(r.date<cutStr)continue;if(!byDate[r.date])byDate[r.date]={date:r.date,tokens:0,cost:0,reqs:0};byDate[r.date].tokens+=r.totalTokens||0;byDate[r.date].cost+=r.costTotal||0;byDate[r.date].reqs++}
-  const result=[];const d=new Date(cutoff);const today=new Date().toISOString().slice(0,10);
-  while(d.toISOString().slice(0,10)<=today){const ds=d.toISOString().slice(0,10);result.push(byDate[ds]||{date:ds,tokens:0,cost:0,reqs:0});d.setDate(d.getDate()+1)}
+function filterDays(records,days){
+  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-days);
+  const cs=cutoff.toISOString().slice(0,10);
+  // Aggregate by date
+  const byDate={};
+  for(const r of records){
+    if(r.date<cs)continue;
+    if(!byDate[r.date])byDate[r.date]={date:r.date,tokens:0,cost:0,input:0,output:0,reqs:0};
+    byDate[r.date].tokens+=r.totalTokens||0;
+    byDate[r.date].cost+=r.costTotal||0;
+    byDate[r.date].input+=r.input||0;
+    byDate[r.date].output+=r.output||0;
+    byDate[r.date].reqs++;
+  }
+  // Fill gaps
+  const result=[];
+  const d=new Date(cutoff);
+  const today=new Date().toISOString().slice(0,10);
+  while(d.toISOString().slice(0,10)<=today){
+    const ds=d.toISOString().slice(0,10);
+    result.push(byDate[ds]||{date:ds,tokens:0,cost:0,input:0,output:0,reqs:0});
+    d.setDate(d.getDate()+1);
+  }
   return result;
 }
 
 function drawChart(){
-  if(!historyData||!historyData.length)return;
-  chartDaily=aggregateByDate(historyData,currentDays);
-  const canvas=document.getElementById('chartCanvas');const ctx=canvas.getContext('2d');
-  const dpr=window.devicePixelRatio||1;const wrap=document.getElementById('chartWrap');
-  const w=wrap.clientWidth,h=120;canvas.width=w*dpr;canvas.height=h*dpr;canvas.style.width=w+'px';canvas.style.height=h+'px';
-  ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);
-  const cw=w-chartPad.l-chartPad.r,ch=h-chartPad.t-chartPad.b;
-  const maxT=Math.max(...chartDaily.map(d=>d.tokens),1);const maxC=Math.max(...chartDaily.map(d=>d.cost),0.001);
-  const n=chartDaily.length;const step=n>1?cw/(n-1):cw;
+  if(!histData)return;
+  const data=filterDays(histData,histDays);
+  const canvas=document.getElementById('histChart');
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const rect=canvas.parentElement.getBoundingClientRect();
+  canvas.width=rect.width*dpr;canvas.height=rect.height*dpr;
+  ctx.scale(dpr,dpr);
+  const W=rect.width,H=rect.height;
+  const pad={t:8,b:18,l:4,r:4};
+  const cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
 
+  ctx.clearRect(0,0,W,H);
+
+  if(!data.length)return;
+  const maxT=Math.max(...data.map(d=>d.tokens),1);
+
+  // Grid lines
   ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=0.5;
-  for(let i=0;i<4;i++){const y=chartPad.t+ch*i/3;ctx.beginPath();ctx.moveTo(chartPad.l,y);ctx.lineTo(w-chartPad.r,y);ctx.stroke()}
+  for(let i=0;i<4;i++){
+    const y=pad.t+ch*(i/3);
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+  }
 
-  ctx.beginPath();chartDaily.forEach((d,i)=>{const x=chartPad.l+i*step,y=chartPad.t+ch*(1-d.tokens/maxT);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
-  ctx.strokeStyle='#818cf8';ctx.lineWidth=1.5;ctx.stroke();
-  ctx.lineTo(chartPad.l+(n-1)*step,chartPad.t+ch);ctx.lineTo(chartPad.l,chartPad.t+ch);ctx.closePath();
-  const g1=ctx.createLinearGradient(0,chartPad.t,0,chartPad.t+ch);g1.addColorStop(0,'rgba(129,140,248,0.18)');g1.addColorStop(1,'rgba(129,140,248,0)');ctx.fillStyle=g1;ctx.fill();
+  // Token area + line
+  const pts=data.map((d,i)=>({x:pad.l+(i/(data.length-1||1))*cw,y:pad.t+ch*(1-d.tokens/maxT),d}));
 
-  ctx.beginPath();ctx.strokeStyle='#a78bfa';ctx.lineWidth=1;ctx.setLineDash([3,3]);
-  chartDaily.forEach((d,i)=>{const x=chartPad.l+i*step,y=chartPad.t+ch*(1-d.cost/maxC);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
-  ctx.stroke();ctx.setLineDash([]);
+  // Area fill
+  ctx.beginPath();ctx.moveTo(pts[0].x,pad.t+ch);
+  pts.forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.lineTo(pts[pts.length-1].x,pad.t+ch);ctx.closePath();
+  const grad=ctx.createLinearGradient(0,pad.t,0,pad.t+ch);
+  grad.addColorStop(0,'rgba(99,102,241,0.25)');grad.addColorStop(1,'rgba(99,102,241,0.02)');
+  ctx.fillStyle=grad;ctx.fill();
 
-  ctx.fillStyle='#444';ctx.font='7px -apple-system,sans-serif';ctx.textAlign='center';
-  const labelEvery=n<=7?1:n<=30?5:15;
-  chartDaily.forEach((d,i)=>{if(i%labelEvery===0||i===n-1)ctx.fillText(d.date.slice(5),chartPad.l+i*step,h-3)});
+  // Line
+  ctx.beginPath();pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+  ctx.strokeStyle='#6366f1';ctx.lineWidth=1.5;ctx.stroke();
 
-  const totalT=chartDaily.reduce((s,d)=>s+d.tokens,0);const totalC=chartDaily.reduce((s,d)=>s+d.cost,0);const totalR=chartDaily.reduce((s,d)=>s+d.reqs,0);
-  document.getElementById('histSummary').textContent=`${fmt(totalT)} tok · ${fmtCost(totalC)} · ${totalR} reqs`;
+  // Dots
+  pts.forEach(p=>{
+    if(p.d.tokens>0){
+      ctx.beginPath();ctx.arc(p.x,p.y,2,0,Math.PI*2);ctx.fillStyle='#818cf8';ctx.fill();
+    }
+  });
 
-  const maxDT=Math.max(...chartDaily.map(d=>d.tokens),1);
-  document.getElementById('dailyPanel').innerHTML=chartDaily.slice().reverse().map(d=>`<div class="daily-row"><span class="dr-date">${d.date.slice(5)}</span><div class="dr-bar-bg"><div class="dr-bar" style="width:${(d.tokens/maxDT*100).toFixed(1)}%"></div></div><span class="dr-tokens">${fmt(d.tokens)}</span></div>`).join('');
+  // X labels
+  ctx.fillStyle='rgba(255,255,255,0.3)';ctx.font='7px -apple-system';ctx.textAlign='center';
+  const step=Math.max(1,Math.floor(data.length/6));
+  data.forEach((d,i)=>{if(i%step===0||i===data.length-1)ctx.fillText(d.date.slice(5),pts[i].x,H-2)});
+
+  // Store points for tooltip
+  canvas._pts=pts;
 }
 
-// Tooltip
-const canvas=document.getElementById('chartCanvas');const tooltip=document.getElementById('chartTooltip');
-canvas.addEventListener('mousemove',e=>{
-  if(!chartDaily.length)return;const rect=canvas.getBoundingClientRect();const mx=e.clientX-rect.left;
-  const w=rect.width;const cw=w-chartPad.l-chartPad.r;const n=chartDaily.length;const step=n>1?cw/(n-1):cw;
-  const idx=Math.round((mx-chartPad.l)/step);if(idx<0||idx>=n){tooltip.style.display='none';return}
-  const d=chartDaily[idx];
-  document.getElementById('ttDate').textContent=d.date;document.getElementById('ttTokens').textContent=fmt(d.tokens);
-  document.getElementById('ttCost').textContent=fmtCost(d.cost);document.getElementById('ttReqs').textContent=String(d.reqs);
-  const tx=chartPad.l+idx*step;let left=tx+8;if(left+130>w)left=tx-138;
-  tooltip.style.left=left+'px';tooltip.style.top='5px';tooltip.style.display='block';
-
-  drawChart();
-  const dpr=window.devicePixelRatio||1;const ctx2=canvas.getContext('2d');ctx2.save();
-  ctx2.strokeStyle='rgba(255,255,255,0.15)';ctx2.lineWidth=1;ctx2.setLineDash([2,2]);
-  ctx2.beginPath();ctx2.moveTo(tx*dpr,chartPad.t*dpr);ctx2.lineTo(tx*dpr,(120-chartPad.b)*dpr);ctx2.stroke();ctx2.setLineDash([]);
-  const maxT=Math.max(...chartDaily.map(dd=>dd.tokens),1);const ch=120-chartPad.t-chartPad.b;
-  const dy=(chartPad.t+ch*(1-d.tokens/maxT))*dpr;
-  ctx2.beginPath();ctx2.arc(tx*dpr,dy,3*dpr,0,Math.PI*2);ctx2.fillStyle='#818cf8';ctx2.fill();
-  ctx2.beginPath();ctx2.arc(tx*dpr,dy,5*dpr,0,Math.PI*2);ctx2.strokeStyle='rgba(129,140,248,0.4)';ctx2.lineWidth=1.5;ctx2.stroke();
-  ctx2.restore();
+// Chart tooltip
+const chartCanvas=document.getElementById('histChart');
+const tooltip=document.getElementById('chartTooltip');
+chartCanvas.addEventListener('mousemove',e=>{
+  if(!chartCanvas._pts||!chartCanvas._pts.length){tooltip.style.opacity='0';return}
+  const rect=chartCanvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left;
+  let closest=chartCanvas._pts[0],minDist=Infinity;
+  for(const p of chartCanvas._pts){const d=Math.abs(p.x-mx);if(d<minDist){minDist=d;closest=p}}
+  if(minDist>30){tooltip.style.opacity='0';return}
+  const d=closest.d;
+  tooltip.innerHTML=`<b>${d.date}</b><br>Tokens: ${fmt(d.tokens)}<br>In: ${fmt(d.input)} / Out: ${fmt(d.output)}<br>Cost: ${fmtCost(d.cost)}<br>Requests: ${d.reqs}`;
+  tooltip.style.opacity='1';
+  let tx=closest.x+8;if(tx+120>rect.width)tx=closest.x-120;
+  tooltip.style.left=tx+'px';tooltip.style.top=(closest.y-10)+'px';
 });
-canvas.addEventListener('mouseleave',()=>{tooltip.style.display='none';if(historyData)drawChart()});
+chartCanvas.addEventListener('mouseleave',()=>{tooltip.style.opacity='0'});
 
-// ── Settings ──
-let providerRegistry={};
-let configData={providers:[],openclawPath:null};
+// ══════════════════════════════════════════════════════════════
+// APIS TAB
+// ══════════════════════════════════════════════════════════════
 
-async function loadSettings(){
-  providerRegistry=await ipcRenderer.invoke('get-provider-registry');
-  configData=await ipcRenderer.invoke('get-config');
+function renderProviders(providers){
+  const sec=document.getElementById('providersSection');
+  if(!providers||!providers.length){
+    sec.innerHTML='<div class="onboarding"><h2>No Providers Configured</h2><p>Add your API providers in Settings to see balance and usage.</p><div class="step"><span class="step-num">1</span><span class="step-text">Click the ⚙ tab</span></div><div class="step"><span class="step-num">2</span><span class="step-text">Click "Add Provider" and select your API</span></div><div class="step"><span class="step-num">3</span><span class="step-text">Enter your API key — it stays encrypted on your machine</span></div></div>';
+    return;
+  }
+  sec.innerHTML=providers.map(p=>{
+    if(p.error)return`<div class="prov-card"><div class="prov-header"><span class="prov-name">${p.name||p.provider}</span><span class="prov-badge" style="color:#f87171">error</span></div><div class="prov-row"><span class="pl">Error</span><span class="pv warn">${p.error}</span></div></div>`;
 
-  const sel=document.getElementById('addProviderType');
-  sel.innerHTML=Object.entries(providerRegistry).map(([id,def])=>`<option value="${id}">${def.name}</option>`).join('');
+    let badge='',rows='',alert='';
+    const t=p.type||'';
+    if(t==='subscription')badge='<span class="prov-badge sub">subscription</span>';
+    else if(t==='coding-plan')badge='<span class="prov-badge plan">coding-plan</span>';
+    else if(t==='credits')badge='<span class="prov-badge credits">credits</span>';
+    else badge='<span class="prov-badge payg">pay-as-you-go</span>';
 
-  renderConfigCards();
-  document.getElementById('openclawPathInput').value=configData.openclawPath||'';
+    // DeepSeek
+    if(p.provider==='deepseek'||p.totalBalance!=null&&p.currency){
+      const bal=p.totalBalance||0;const cur=p.currency||'';
+      const pct=Math.min(100,Math.max(0,(bal/50)*100));
+      const barCls=pct>50?'green':pct>20?'yellow':'red';
+      rows=`<div class="prov-row"><span class="pl">Status</span><span class="pv ${p.available?'ok':'warn'}">${p.available?'Active':'Inactive'}</span></div>
+        <div class="prov-row"><span class="pl">Balance</span><span class="pv">${cur} ${bal.toFixed(2)}</span></div>
+        <div class="quota-bar-bg"><div class="quota-bar ${barCls}" style="width:${pct}%"></div></div>
+        <div class="prov-row"><span class="pl">Topped Up</span><span class="pv">${cur} ${(p.toppedUpBalance||0).toFixed(2)}</span></div>`;
+    }
+    // Z.ai
+    else if(p.windows){
+      rows=`<div class="prov-row"><span class="pl">Plan</span><span class="pv">${p.plan||'--'}</span></div>`;
+      for(const w of p.windows){
+        const pct=w.pct||0;const barCls=pct<60?'green':pct<85?'yellow':'red';
+        rows+=`<div class="prov-row"><span class="pl">${w.label}</span><span class="pv">${pct.toFixed(0)}%</span></div>
+          <div class="quota-bar-bg"><div class="quota-bar ${barCls}" style="width:${pct}%"></div></div>`;
+      }
+    }
+    // Laozhang
+    else if(p.totalUsage!=null){
+      const pct=p.hardLimit>0?Math.min(100,(p.totalUsage/p.hardLimit)*100):0;
+      const barCls=pct<60?'green':pct<85?'yellow':'red';
+      rows=`<div class="prov-row"><span class="pl">Usage</span><span class="pv">$${p.totalUsage.toFixed(2)}</span></div>
+        <div class="quota-bar-bg"><div class="quota-bar ${barCls}" style="width:${pct}%"></div></div>
+        <div class="prov-row"><span class="pl">Remaining</span><span class="pv">$${(p.remaining||0).toFixed(2)}</span></div>`;
+    }
+    // Qwen
+    else if(p.cashBalance!=null){
+      const bal=p.cashBalance||0;
+      const pct=Math.min(100,Math.max(0,(bal/50)*100));
+      const barCls=pct>50?'green':pct>20?'yellow':'red';
+      rows=`<div class="prov-row"><span class="pl">Key</span><span class="pv ${p.keyStatus==='active'?'ok':'warn'}">${p.keyStatus||'--'}</span></div>
+        <div class="prov-row"><span class="pl">Cash</span><span class="pv">¥${bal.toFixed(2)}</span></div>
+        <div class="quota-bar-bg"><div class="quota-bar ${barCls}" style="width:${pct}%"></div></div>
+        <div class="prov-row"><span class="pl">Coupon</span><span class="pv">¥${(p.couponBalance||0).toFixed(2)}</span></div>
+        <div class="prov-row"><span class="pl">Monthly</span><span class="pv">¥${(p.monthlySpend||0).toFixed(2)}</span></div>`;
+    }
+    // OpenRouter
+    else if(p.usage!=null&&p.limit!=null){
+      const pct=p.limit>0?Math.min(100,(p.usage/p.limit)*100):0;
+      const barCls=pct<60?'green':pct<85?'yellow':'red';
+      rows=`<div class="prov-row"><span class="pl">Usage</span><span class="pv">$${p.usage.toFixed(4)}</span></div>
+        <div class="quota-bar-bg"><div class="quota-bar ${barCls}" style="width:${pct}%"></div></div>
+        <div class="prov-row"><span class="pl">Limit</span><span class="pv">${p.limit?'$'+p.limit:'Unlimited'}</span></div>`;
+    }
+    // Key validation only
+    else if(p.keyStatus){
+      rows=`<div class="prov-row"><span class="pl">Key</span><span class="pv ${p.keyStatus==='active'?'ok':'warn'}">${p.keyStatus}</span></div>`;
+      if(p.note)rows+=`<div class="prov-row"><span class="pl">Note</span><span class="pv">${p.note}</span></div>`;
+    }
+    // Generic
+    else{
+      if(p.plan)rows+=`<div class="prov-row"><span class="pl">Plan</span><span class="pv">${p.plan}</span></div>`;
+      if(p.quota)rows+=`<div class="prov-row"><span class="pl">Quota</span><span class="pv">${p.quota}</span></div>`;
+      if(p.note)rows+=`<div class="prov-row"><span class="pl">Note</span><span class="pv">${p.note}</span></div>`;
+    }
+
+    if(p._alert)alert=`<div class="prov-alert">⚠ ${p._alert}</div>`;
+
+    return`<div class="prov-card"><div class="prov-header"><span class="prov-name">${p.name}</span>${badge}</div>${rows}${alert}</div>`;
+  }).join('');
 }
 
-function renderConfigCards(){
-  const el=document.getElementById('providerConfigs');
-  if(!configData.providers.length){el.innerHTML='<div class="empty-msg">No providers added yet.</div>';return}
-  el.innerHTML=configData.providers.map((p,idx)=>{
-    const reg=providerRegistry[p.type];if(!reg)return'';
-    const fields=(reg.fields||[]).map(f=>{
-      const val=(p.config&&p.config[f.key])||'';
-      return`<div class="cfg-field"><label>${f.label}${f.optional?' (optional)':''}</label><input data-idx="${idx}" data-key="${f.key}" value="${val}" placeholder="${f.placeholder||''}"></div>`;
-    }).join('');
-    return`<div class="cfg-card"><div class="cfg-header"><span class="cfg-name">${p.name||reg.name}</span><button class="cfg-del" data-idx="${idx}">✕</button></div>${fields}</div>`;
+// ══════════════════════════════════════════════════════════════
+// SETTINGS TAB
+// ══════════════════════════════════════════════════════════════
+
+let providerRegistry={};
+(async()=>{providerRegistry=await ipcRenderer.invoke('get-provider-registry')})();
+
+async function renderSettings(){
+  const cfg=await ipcRenderer.invoke('get-config');
+  const sec=document.getElementById('settingsContent');
+  const theme=cfg.settings?.theme||'system';
+  const tokenAlert=cfg.settings?.tokenAlertThreshold||50000;
+
+  let providersHtml=(cfg.providers||[]).map((p,i)=>{
+    const masked=p.config?._apiKeyMasked||'****';
+    return`<div class="prov-row" style="padding:4px 0;border-bottom:1px solid var(--card-border)">
+      <span class="pv">${p.name||p.type} <span style="color:var(--text3)">${masked}</span></span>
+      <button class="btn danger" onclick="removeProvider(${i})" style="font-size:8px;padding:1px 6px">✕</button>
+    </div>`;
   }).join('');
 
-  el.querySelectorAll('.cfg-del').forEach(b=>{b.addEventListener('click',()=>{configData.providers.splice(parseInt(b.dataset.idx),1);renderConfigCards()})});
-  el.querySelectorAll('input[data-idx]').forEach(inp=>{inp.addEventListener('input',()=>{
-    const idx=parseInt(inp.dataset.idx);const key=inp.dataset.key;
-    if(!configData.providers[idx].config)configData.providers[idx].config={};
-    configData.providers[idx].config[key]=inp.value;
-  })});
+  let regOptions=Object.entries(providerRegistry).map(([id,def])=>`<option value="${id}">${def.name}</option>`).join('');
+
+  sec.innerHTML=`
+    <div class="setting-group">
+      <h3>Appearance</h3>
+      <div class="setting-row"><label>Theme</label>
+        <select id="themeSelect" onchange="saveTheme(this.value)">
+          <option value="system" ${theme==='system'?'selected':''}>System</option>
+          <option value="dark" ${theme==='dark'?'selected':''}>Dark</option>
+          <option value="light" ${theme==='light'?'selected':''}>Light</option>
+        </select>
+      </div>
+    </div>
+    <div class="setting-group">
+      <h3>Alerts</h3>
+      <div class="setting-row"><label>Session token alert threshold</label>
+        <input type="number" value="${tokenAlert}" style="width:60px" onchange="saveTokenAlert(this.value)">
+      </div>
+    </div>
+    <div class="setting-group">
+      <h3>API Providers (${(cfg.providers||[]).length})</h3>
+      ${providersHtml||'<div style="font-size:9px;color:var(--text3);padding:4px 0">No providers configured</div>'}
+      <div class="btn-row" style="margin-top:6px">
+        <select id="addProviderType" style="font-size:9px;flex:1">${regOptions}</select>
+        <button class="btn primary" onclick="showAddProvider()">+ Add</button>
+      </div>
+      <div id="addProviderForm" style="display:none;margin-top:6px"></div>
+    </div>
+    <div class="setting-group">
+      <h3>Data</h3>
+      <div class="setting-row"><label>Storage</label><button class="btn" onclick="openDataDir()" style="font-size:8px">Open folder</button></div>
+      <div style="font-size:8px;color:var(--text3);margin-top:2px">API keys are AES-256-GCM encrypted</div>
+    </div>`;
 }
 
-document.getElementById('addProviderBtn').addEventListener('click',()=>{
+window.showAddProvider=function(){
   const type=document.getElementById('addProviderType').value;
   const reg=providerRegistry[type];if(!reg)return;
-  configData.providers.push({id:`${type}_${Date.now()}`,type,name:reg.name,config:{}});
-  renderConfigCards();
-});
+  const form=document.getElementById('addProviderForm');
+  form.style.display='block';
+  form.innerHTML=`
+    <div style="font-size:9px;font-weight:600;margin-bottom:4px">${reg.name}</div>
+    ${reg.fields.map(f=>`<div class="setting-row"><label>${f.label}</label><input id="field-${f.key}" placeholder="${f.placeholder||''}" style="width:140px;font-size:8px"></div>`).join('')}
+    <div class="btn-row"><button class="btn primary" onclick="confirmAddProvider('${type}')">Save</button><button class="btn" onclick="document.getElementById('addProviderForm').style.display='none'">Cancel</button></div>`;
+};
 
-document.getElementById('saveConfigBtn').addEventListener('click',async()=>{
-  configData.openclawPath=document.getElementById('openclawPathInput').value||null;
-  await ipcRenderer.invoke('save-config',configData);
-  document.getElementById('saveConfigBtn').textContent='✓ Saved';
-  setTimeout(()=>{document.getElementById('saveConfigBtn').textContent='Save'},1500);
-});
+window.confirmAddProvider=async function(type){
+  const reg=providerRegistry[type];if(!reg)return;
+  const cfg=await ipcRenderer.invoke('get-config');
+  const provConfig={};
+  for(const f of reg.fields){
+    provConfig[f.key]=document.getElementById('field-'+f.key)?.value||'';
+  }
+  if(!cfg.providers)cfg.providers=[];
+  cfg.providers.push({
+    id:type+'_'+Date.now(),
+    type,
+    name:provConfig.name||reg.name,
+    config:provConfig,
+  });
+  // Remove masked keys before saving (they come from get-config)
+  for(const p of cfg.providers){if(p.config?._apiKeyMasked)delete p.config._apiKeyMasked}
+  await ipcRenderer.invoke('save-config',cfg);
+  renderSettings();
+};
 
-// ── Data path ──
-document.getElementById('pathBtn').addEventListener('click',async()=>{const p=await ipcRenderer.invoke('get-data-path');if(p)ipcRenderer.invoke('open-path',p)});
+window.removeProvider=async function(idx){
+  const cfg=await ipcRenderer.invoke('get-config');
+  for(const p of cfg.providers){if(p.config?._apiKeyMasked)delete p.config._apiKeyMasked}
+  cfg.providers.splice(idx,1);
+  await ipcRenderer.invoke('save-config',cfg);
+  renderSettings();
+};
 
-// ── Refresh ──
-async function refreshLive(){try{const r=await ipcRenderer.invoke('get-live');if(r.ok)updateLive(r.sessions)}catch{}}
-async function refreshHistory(){try{const r=await ipcRenderer.invoke('get-history');if(r.ok){historyData=r.records;if(histOpen)drawChart()}}catch{}}
-async function refreshProviders(){try{const r=await ipcRenderer.invoke('get-providers');if(r.ok)updateProviders(r.providers)}catch{}}
+window.saveTheme=async function(v){
+  const cfg=await ipcRenderer.invoke('get-config');
+  for(const p of cfg.providers||[]){if(p.config?._apiKeyMasked)delete p.config._apiKeyMasked}
+  if(!cfg.settings)cfg.settings={};
+  cfg.settings.theme=v;
+  await ipcRenderer.invoke('save-config',cfg);
+  applyTheme();
+};
+
+window.saveTokenAlert=async function(v){
+  const cfg=await ipcRenderer.invoke('get-config');
+  for(const p of cfg.providers||[]){if(p.config?._apiKeyMasked)delete p.config._apiKeyMasked}
+  if(!cfg.settings)cfg.settings={};
+  cfg.settings.tokenAlertThreshold=parseInt(v)||50000;
+  await ipcRenderer.invoke('save-config',cfg);
+};
+
+window.openDataDir=async function(){
+  const p=await ipcRenderer.invoke('get-data-path');
+  ipcRenderer.invoke('open-path',p);
+};
+
+// ══════════════════════════════════════════════════════════════
+// REFRESH
+// ══════════════════════════════════════════════════════════════
+
+async function refreshLive(){
+  const r=await ipcRenderer.invoke('get-live');
+  if(r.ok)updateLive(r.sessions);
+}
+
+async function refreshHistory(){
+  const r=await ipcRenderer.invoke('get-history');
+  if(r.ok){histData=r.records;if(histExpanded)drawChart()}
+}
+
+async function refreshProviders(){
+  const r=await ipcRenderer.invoke('get-providers');
+  if(r.ok)renderProviders(r.providers);
+}
+
 async function refreshAll(){
   document.getElementById('footerInfo').innerHTML='<span class="spinner"></span>';
-  await Promise.all([refreshLive(),refreshHistory()]);
-  if(currentView==='providers')await refreshProviders();
+  await Promise.all([refreshLive(),refreshHistory(),currentPage==='apis'?refreshProviders():Promise.resolve()]);
   document.getElementById('footerInfo').textContent=new Date().toLocaleTimeString();
 }
 
-ipcRenderer.on('data-changed',()=>{refreshLive();refreshHistory()});
+// Init
 refreshAll();
 setInterval(refreshLive,10000);
 setInterval(refreshHistory,60000);
+
+// Listen for file changes
+ipcRenderer.on('data-changed',()=>{refreshLive();refreshHistory()});
 </script>
 </body>
 </html>
