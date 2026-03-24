@@ -28,8 +28,8 @@ function getPricing(modelId) {
 
 function findOpenClawSessions() {
   const candidates = [
-    path.join(process.env.HOME, '.clawdbot/agents/main/sessions'),
     path.join(process.env.HOME, '.openclaw/agents/main/sessions'),
+    path.join(process.env.HOME, '.clawdbot/agents/main/sessions'),
     path.join(process.env.HOME, '.claude/agents/main/sessions'),
   ];
   for (const dir of candidates) {
