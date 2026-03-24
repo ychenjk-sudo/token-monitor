@@ -13,16 +13,32 @@ function estimateTokens(text) {
 }
 
 const MODEL_PRICING = {
-  'claude-opus-4':   { input: 15/1e6, output: 75/1e6 },
-  'claude-sonnet-4': { input: 3/1e6,  output: 15/1e6 },
-  'claude-haiku':    { input: 0.8/1e6, output: 4/1e6 },
+  // Anthropic official pricing (USD per token)
+  'claude-opus-4':     { input: 15/1e6, output: 75/1e6 },
+  'claude-sonnet-4':   { input: 3/1e6,  output: 15/1e6 },
+  'claude-haiku':      { input: 0.8/1e6, output: 4/1e6 },
+  // OpenAI
+  'gpt-5':             { input: 10/1e6, output: 30/1e6 },
+  // GLM (ZAI) — ¥0.6/千token input, ¥2.2/千token output → convert to USD (~$0.08/$0.30 per 1K)
+  'glm-4':             { input: 0.08/1e3, output: 0.30/1e3 },
+  // MiniMax
+  'minimax-m2':        { input: 1/1e6,  output: 5/1e6 },
+  // NVIDIA Nemotron
+  'nemotron':          { input: 0.3/1e6, output: 1/1e6 },
+  // delivery-mirror (internal, no real cost)
+  'delivery-mirror':   { input: 0, output: 0 },
 };
 
 function getPricing(modelId) {
   const m = (modelId || '').toLowerCase();
-  if (m.includes('opus'))   return MODEL_PRICING['claude-opus-4'];
-  if (m.includes('sonnet')) return MODEL_PRICING['claude-sonnet-4'];
-  if (m.includes('haiku'))  return MODEL_PRICING['claude-haiku'];
+  if (m.includes('opus'))     return MODEL_PRICING['claude-opus-4'];
+  if (m.includes('sonnet'))   return MODEL_PRICING['claude-sonnet-4'];
+  if (m.includes('haiku'))    return MODEL_PRICING['claude-haiku'];
+  if (m.includes('gpt-5'))    return MODEL_PRICING['gpt-5'];
+  if (m.includes('glm'))      return MODEL_PRICING['glm-4'];
+  if (m.includes('minimax'))  return MODEL_PRICING['minimax-m2'];
+  if (m.includes('nemotron')) return MODEL_PRICING['nemotron'];
+  if (m.includes('delivery') || m.includes('mirror')) return MODEL_PRICING['delivery-mirror'];
   return null;
 }
 
@@ -71,6 +87,12 @@ function scanSessions(sessionsDir, store) {
 
       let recInput = u.input || 0, recOutput = u.output || 0, recTotal = u.totalTokens || 0;
       let costTotal = u.cost?.total || 0, estimated = false;
+
+      // If gateway reported tokens but no cost, estimate cost from local pricing
+      if (costTotal === 0 && (recInput > 0 || recOutput > 0)) {
+        const pricing = getPricing(msg.model);
+        if (pricing) costTotal = recInput * pricing.input + recOutput * pricing.output;
+      }
 
       if (recTotal === 0 && recInput === 0 && recOutput === 0) {
         recOutput = estimateTokens(contentStr);
@@ -145,7 +167,14 @@ function readLiveStatus(sessionsDir) {
           const u = msg.usage;
           if ((u.input||0) > 0 || (u.output||0) > 0 || (u.totalTokens||0) > 0) {
             si+=u.input||0; so+=u.output||0; st+=u.totalTokens||0;
-            cr+=u.cacheRead||0; cw+=u.cacheWrite||0; cost+=u.cost?.total||0;
+            cr+=u.cacheRead||0; cw+=u.cacheWrite||0;
+            let msgCost = u.cost?.total||0;
+            // If gateway didn't provide cost, estimate from local pricing
+            if (msgCost === 0 && ((u.input||0) > 0 || (u.output||0) > 0)) {
+              const p = getPricing(msg.model);
+              if (p) msgCost = (u.input||0)*p.input + (u.output||0)*p.output;
+            }
+            cost+=msgCost;
           } else {
             const cs = typeof msg.content==='string'?msg.content:JSON.stringify(msg.content||'');
             const eo = estimateTokens(cs);
