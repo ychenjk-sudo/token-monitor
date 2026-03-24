@@ -200,7 +200,15 @@ const { ipcRenderer } = require('electron');
 // ── Helpers ──
 function fmt(n){if(n==null||isNaN(n))return'--';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return String(n)}
 function fmtCost(n){if(n==null||isNaN(n))return'--';if(n>=1)return'$'+n.toFixed(2);if(n>=0.01)return'$'+n.toFixed(3);return'$'+n.toFixed(4)}
-function shortModel(m){return(m||'').replace(/^(azure\/)?anthropic\//,'').replace(/^(models\/)/,'').replace(/-\d{8}$/,'')}
+function shortModel(m){
+  let s=(m||'');
+  // Strip all provider prefixes (nvidia/, azure/, aws/, anthropic/, bedrock-, openrouter/, etc.)
+  s=s.replace(/^(?:nvidia\/|azure\/|aws\/|openrouter\/|company-gateway\/|zai\/|minimax\/)*/, '');
+  s=s.replace(/^(?:anthropic\/|models\/|bedrock-)*/, '');
+  // Normalize common model families
+  s=s.replace(/-\d{8}$/,'');  // strip date suffixes
+  return s;
+}
 
 // ── Page switching ──
 let currentPage='live';
