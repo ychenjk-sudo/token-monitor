@@ -72,9 +72,9 @@ function sendAlert(providerId, title, body) {
 
 // ── IPC: Live status ─────────────────────────────────────────
 
-ipcMain.handle('get-live', async () => {
+ipcMain.handle('get-live', async (_, range) => {
   try {
-    const sessions = openclaw.readLiveStatus(sessionsDir);
+    const sessions = openclaw.readLiveByRange(sessionsDir, range || 'all');
     // Check for high token usage alerts
     const cfg = config.load();
     const tokenAlert = parseInt(cfg.settings?.tokenAlertThreshold) || 50000;

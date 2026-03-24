@@ -50,6 +50,12 @@ body.light{
 .tab:hover{color:var(--text2)}
 .tab.active{color:var(--accent);background:var(--accent-bg);border-color:rgba(74,222,128,0.15)}
 
+/* ── Range sub-tabs ── */
+.range-tabs{display:flex;gap:2px;margin-bottom:2px}
+.range-tab{font-size:8px;padding:2px 8px;border-radius:4px;background:transparent;border:1px solid transparent;color:var(--text3);cursor:pointer;font-family:inherit;font-weight:500;transition:all .15s}
+.range-tab:hover{color:var(--text2)}
+.range-tab.active{color:var(--accent);background:var(--accent-bg);border-color:rgba(74,222,128,0.12)}
+
 /* ── Model rows ── */
 .model-row{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:var(--card);border:1px solid var(--card-border);border-radius:7px}
 .mr-left{display:flex;flex-direction:column}
@@ -154,6 +160,11 @@ canvas{width:100%!important;height:100%!important;border-radius:6px}
 
   <!-- ── Live ── -->
   <div class="page active" id="page-live">
+    <div class="range-tabs">
+      <button class="range-tab" data-range="session">Session</button>
+      <button class="range-tab active" data-range="today">Today</button>
+      <button class="range-tab" data-range="all">All Time</button>
+    </div>
     <div id="modelsSection"></div>
     <div class="totals-bar">
       <div><span class="tb-label">Total</span></div>
@@ -221,6 +232,17 @@ document.querySelectorAll('.tabs .tab[data-page]').forEach(t=>{
     document.getElementById('page-'+currentPage).classList.add('active');
     if(currentPage==='apis')refreshProviders();
     if(currentPage==='settings')renderSettings();
+  });
+});
+
+// ── Range switching ──
+let currentRange='today';
+document.querySelectorAll('.range-tabs .range-tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.range-tabs .range-tab').forEach(b=>b.classList.remove('active'));
+    t.classList.add('active');
+    currentRange=t.dataset.range;
+    refreshLive();
   });
 });
 
@@ -595,7 +617,7 @@ window.openDataDir=async function(){
 // ══════════════════════════════════════════════════════════════
 
 async function refreshLive(){
-  const r=await ipcRenderer.invoke('get-live');
+  const r=await ipcRenderer.invoke('get-live', currentRange);
   if(r.ok)updateLive(r.sessions);
 }
 

@@ -165,4 +165,101 @@ function readLiveStatus(sessionsDir) {
   return results;
 }
 
-module.exports = { findOpenClawSessions, scanSessions, readLiveStatus, estimateTokens, getPricing };
+// ── Time-filtered live status ────────────────────────────────
+// range: 'session' (all time per session) | 'today' | 'all'
+
+let _todayCache = { ts: 0, data: null };
+const TODAY_CACHE_TTL = 60000; // 60s
+
+function readLiveByRange(sessionsDir, range) {
+  if (!sessionsDir) return [];
+
+  // 'session' and 'all' both use the full session data (merged differently in frontend)
+  if (range === 'session' || range === 'all') {
+    return readLiveStatus(sessionsDir);
+  }
+
+  // 'today' — scan jsonl files, only count messages from today
+  const now = Date.now();
+  if (_todayCache.data && (now - _todayCache.ts) < TODAY_CACHE_TTL) {
+    return _todayCache.data;
+  }
+
+  const sjPath = path.join(sessionsDir, 'sessions.json');
+  if (!fs.existsSync(sjPath)) return [];
+
+  const sessions = JSON.parse(fs.readFileSync(sjPath, 'utf-8'));
+  const today = new Date().toISOString().slice(0, 10);
+  const todayStart = new Date(today + 'T00:00:00').getTime();
+  const results = [];
+
+  for (const [key, val] of Object.entries(sessions)) {
+    if (!val.model || !val.sessionId) continue;
+
+    const jsonlPath = path.join(sessionsDir, val.sessionId + '.jsonl');
+    let stat;
+    try { stat = fs.statSync(jsonlPath); } catch { continue; }
+    // Skip files not modified today (optimization)
+    if (stat.mtimeMs < todayStart) continue;
+
+    const entry = {
+      sessionKey: key, model: val.model,
+      input: 0, output: 0, total: 0,
+      cacheRead: 0, cacheWrite: 0,
+      contextLimit: val.contextTokens || 0,
+      cost: 0, estimated: false,
+    };
+
+    try {
+      const content = fs.readFileSync(jsonlPath, 'utf-8');
+      const lines = content.split('\n').filter(l => l.trim());
+      const allMsgs = [];
+      for (const line of lines) {
+        try { const obj = JSON.parse(line); if (obj.type === 'message' && obj.message) allMsgs.push(obj); } catch {}
+      }
+
+      for (let i = 0; i < allMsgs.length; i++) {
+        const obj = allMsgs[i];
+        const msg = obj.message;
+        if (msg.role !== 'assistant' || !msg.usage) continue;
+
+        const ts = obj.timestamp || msg.timestamp;
+        if (!ts) continue;
+        const msgTime = typeof ts === 'number' ? ts : new Date(ts).getTime();
+        if (msgTime < todayStart) continue; // Skip messages before today
+
+        const u = msg.usage;
+        if ((u.input||0) > 0 || (u.output||0) > 0 || (u.totalTokens||0) > 0) {
+          entry.input += u.input||0;
+          entry.output += u.output||0;
+          entry.total += u.totalTokens||0;
+          entry.cacheRead += u.cacheRead||0;
+          entry.cacheWrite += u.cacheWrite||0;
+          entry.cost += u.cost?.total||0;
+        } else {
+          const cs = typeof msg.content==='string' ? msg.content : JSON.stringify(msg.content||'');
+          const eo = estimateTokens(cs);
+          let ei = 0;
+          for (let j=i-1; j>=0; j--) {
+            if (allMsgs[j].message?.role==='user') {
+              const c = allMsgs[j].message.content;
+              ei = estimateTokens(typeof c==='string' ? c : JSON.stringify(c));
+              break;
+            }
+          }
+          entry.input += ei; entry.output += eo; entry.total += ei+eo;
+          entry.estimated = true;
+          const p = getPricing(msg.model);
+          if (p) entry.cost += ei*p.input + eo*p.output;
+        }
+      }
+    } catch {}
+
+    if (entry.total > 0) results.push(entry);
+  }
+
+  _todayCache = { ts: now, data: results };
+  return results;
+}
+
+module.exports = { findOpenClawSessions, scanSessions, readLiveStatus, readLiveByRange, estimateTokens, getPricing };
