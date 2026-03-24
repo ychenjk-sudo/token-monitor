@@ -74,7 +74,14 @@ function sendAlert(providerId, title, body) {
 
 ipcMain.handle('get-live', async (_, range) => {
   try {
-    const sessions = openclaw.readLiveByRange(sessionsDir, range || 'all');
+    let historyStore = null;
+    if (range === 'today' || range === 'all') {
+      historyStore = config.loadHistory();
+      // Ensure history is up to date
+      historyStore = openclaw.scanSessions(sessionsDir, historyStore);
+      config.saveHistory(historyStore);
+    }
+    const sessions = openclaw.readLiveByRange(sessionsDir, range || 'session', historyStore);
     // Check for high token usage alerts
     const cfg = config.load();
     const tokenAlert = parseInt(cfg.settings?.tokenAlertThreshold) || 50000;

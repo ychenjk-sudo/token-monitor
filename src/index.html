@@ -161,8 +161,8 @@ canvas{width:100%!important;height:100%!important;border-radius:6px}
   <!-- ── Live ── -->
   <div class="page active" id="page-live">
     <div class="range-tabs">
-      <button class="range-tab" data-range="session">Session</button>
-      <button class="range-tab active" data-range="today">Today</button>
+      <button class="range-tab active" data-range="session">Session</button>
+      <button class="range-tab" data-range="today">Today</button>
       <button class="range-tab" data-range="all">All Time</button>
     </div>
     <div id="modelsSection"></div>
@@ -236,7 +236,7 @@ document.querySelectorAll('.tabs .tab[data-page]').forEach(t=>{
 });
 
 // ── Range switching ──
-let currentRange='today';
+let currentRange='session';
 document.querySelectorAll('.range-tabs .range-tab').forEach(t=>{
   t.addEventListener('click',()=>{
     document.querySelectorAll('.range-tabs .range-tab').forEach(b=>b.classList.remove('active'));
